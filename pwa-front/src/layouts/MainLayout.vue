@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Hand Internal App </q-toolbar-title>
+        <q-toolbar-title> PwC PWA demo App </q-toolbar-title>
 
         <!-- <div> v{{ $q.version }}</div> -->
         <div class="row items-center q-gutter-sm">

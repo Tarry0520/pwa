@@ -8,6 +8,8 @@
 
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies'
 
 self.skipWaiting()
 clientsClaim()
@@ -17,15 +19,70 @@ precacheAndRoute(self.__WB_MANIFEST)
 
 cleanupOutdatedCaches()
 
-// Non-SSR fallbacks to index.html
-// Production SSR fallbacks to offline.html (except for dev)
-// if (process.env.MODE !== 'ssr' || process.env.PROD) {
-//   registerRoute(
-//     new NavigationRoute(createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML), {
-//       denylist: [new RegExp(process.env.PWA_SERVICE_WORKER_REGEX), /workbox-(.)*\.js$/],
-//     }),
-//   )
-// }
+// Handle navigation requests - fallback to index.html for offline support
+registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  async () => {
+    try {
+      // 尝试从缓存中获取index.html
+      const cachedResponse = await caches.match('index.html')
+      if (cachedResponse) {
+        return cachedResponse
+      }
+
+      // 尝试从缓存中获取根路径
+      const rootResponse = await caches.match('/')
+      if (rootResponse) {
+        return rootResponse
+      }
+
+      // 最后尝试网络请求
+      return await fetch('index.html')
+    } catch (error) {
+      console.error('Navigation fallback failed:', error)
+      // 返回一个基本的HTML响应作为最后的回退
+      return new Response(
+        `<!DOCTYPE html>
+        <html>
+          <head>
+            <title>PwC PWA Demo - Offline</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+          </head>
+          <body>
+            <div id="q-app">
+              <h1>应用正在离线模式下运行</h1>
+              <p>请检查您的网络连接</p>
+            </div>
+          </body>
+        </html>`,
+        {
+          headers: { 'Content-Type': 'text/html' },
+        },
+      )
+    }
+  },
+)
+
+// 缓存API请求 - 使用StaleWhileRevalidate策略
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new StaleWhileRevalidate({
+    cacheName: 'api-cache',
+  }),
+)
+
+// 缓存静态资源 - 使用CacheFirst策略
+registerRoute(
+  ({ request }) =>
+    request.destination === 'image' ||
+    request.destination === 'font' ||
+    request.destination === 'style' ||
+    request.destination === 'script',
+  new CacheFirst({
+    cacheName: 'static-resources',
+  }),
+)
 self.addEventListener('push', function (event) {
   console.log('event', event)
 

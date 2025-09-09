@@ -1,4 +1,4 @@
-# Hand App (hand-pwa)
+# Hand App (PwC PWA Demo)
 
 A Quasar Project
 
