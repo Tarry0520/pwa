@@ -1,8 +1,8 @@
 {
-  "name": "hand-pwa",
+  "name": "PwC PWA Demo",
   "version": "0.0.1",
   "description": "A Quasar Project",
-  "productName": "Hand App",
+  "productName": "PwC PWA Demo",
   "author": "谭华清 <huaqing.tan@hand-china.com>",
   "type": "module",
   "private": true,
