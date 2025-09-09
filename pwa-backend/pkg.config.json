@@ -1,0 +1,27 @@
+{
+  "name": "pwa-backend",
+  "version": "1.0.0",
+  "description": "PWA Backend Application",
+  "main": "bin/www",
+  "bin": "bin/www",
+  "assets": [
+    "views/**/*",
+    "public/**/*",
+    "config/**/*",
+    "middleware/**/*",
+    "services/**/*",
+    "utils/**/*",
+    "models/**/*",
+    "routes/**/*",
+    "*.js"
+  ],
+  "targets": [
+    "node18-win-x64",
+    "node18-linux-x64",
+    "node18-macos-x64"
+  ],
+  "outputPath": "dist",
+  "scripts": [
+    "bin/www"
+  ]
+}
