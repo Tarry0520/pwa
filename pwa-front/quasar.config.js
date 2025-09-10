@@ -38,7 +38,14 @@ export default defineConfig((ctx) => {
         node: 'node20',
       },
 
-      vueRouterMode: 'hash', // available values: 'hash', 'history'
+      vueRouterMode: 'history', // available values: 'hash', 'history'
+      publicPath: '/',
+      
+      // 添加 base URL 配置
+      vueRouterBase: '/',
+      
+      // 確保正確處理靜態資源
+      assetsDir: 'assets',
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
@@ -147,15 +154,21 @@ export default defineConfig((ctx) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'InjectManifest', // 'GenerateSW' or 'InjectManifest'
-      // swFilename: 'sw.js',
-      // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
-      // useCredentialsForManifestTag: true,
-      // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      workboxMode: 'GenerateSW',
+      swFilename: 'sw.js',
+      manifestFilename: 'manifest.json',
+      useCredentials: false,
+      injectPwaMetaTags: true,
+      extendManifestJson (json) {
+        json.start_url = '/'
+        json.scope = '/'
+        return json
+      },
+      extendGenerateSWOptions (cfg) {
+        cfg.navigateFallback = '/index.html'
+        cfg.navigateFallbackAllowlist = [/^(?!.*\.(js|css|json|png|jpg|gif|ico|svg|woff|woff2|ttf|map)).*$/]
+        return cfg
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova

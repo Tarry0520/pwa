@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-pwafront-dev-fbdb4-authRole",
+      "UnauthRoleArn": "arn:aws:iam::266735840320:role/amplify-pwafront-dev-fbdb4-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::266735840320:role/amplify-pwafront-dev-fbdb4-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-pwafront-dev-fbdb4-deployment",
+      "UnauthRoleName": "amplify-pwafront-dev-fbdb4-unauthRole",
+      "StackName": "amplify-pwafront-dev-fbdb4",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:266735840320:stack/amplify-pwafront-dev-fbdb4/780d9dd0-8e0e-11f0-bbc4-0233c4f61ad7",
+      "AmplifyAppId": "dth0c2ey067ri"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      }
+    }
+  }
+}

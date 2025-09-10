@@ -1,0 +1,12 @@
+.git
+.env*
+.vscode
+node_modules
+test
+*.test.js
+README.md
+*.log
+coverage
+.DS_Store
+views/
+public/

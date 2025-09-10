@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www"
+    "devstart": "nodemon ./bin/www",
+    "build": "npm install --production",
+    "package": "sam package --template-file template.yaml --output-template-file packaged.yaml --s3-bucket pwa-backend-deploy-266735840320",
+    "deploy": "sam deploy --template-file packaged.yaml --stack-name pwa-backend --capabilities CAPABILITY_IAM --parameter-overrides Environment=dev"
   },
   "dependencies": {
+    "@vendia/serverless-express": "^4.12.6",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
