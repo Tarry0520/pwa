@@ -210,7 +210,7 @@ export default defineConfig((ctx) => {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'hand-pwa',
+        appId: 'PwC PWA Demo',
       },
     },
 
