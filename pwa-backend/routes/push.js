@@ -26,43 +26,32 @@ router.get('/vapid-key', (req, res) => {
  * 保存推送订阅
  * POST /push/subscribe
  */
-router.post('/subscribe', authenticateToken, async (req, res) => {
+router.post('/subscribe', async (req, res) => {
   try {
-    const userId = req.user.id;
+    // Get user ID if authenticated
+    const userId = req.user?.id || null;
     
-    // 支持两种数据格式：
-    // 1. { subscription: { endpoint, keys, expirationTime } }
-    // 2. { endpoint, keys, expirationTime } (直接格式)
-    let subscription;
-    if (req.body.subscription) {
-      subscription = req.body.subscription;
-    } else {
-      subscription = req.body;
+    // Support both formats
+    let subscription = req.body.subscription || req.body;
+
+    // Validate subscription format
+    if (!subscription || !subscription.endpoint || !subscription.keys ||
+        !subscription.keys.p256dh || !subscription.keys.auth) {
+      return validationErrorResponse(res, '订阅信息格式不正确');
     }
 
-    // 验证必填字段
-    if (!subscription) {
-      return validationErrorResponse(res, '订阅信息是必填项');
-    }
-
-    // 验证订阅格式
-    if (!subscription.endpoint || !subscription.keys) {
-      return validationErrorResponse(res, '订阅信息格式不正确，缺少endpoint或keys字段');
-    }
-
-    // 验证keys格式
-    if (!subscription.keys.p256dh || !subscription.keys.auth) {
-      return validationErrorResponse(res, '订阅keys格式不正确，缺少p256dh或auth字段');
-    }
+    // Add user agent information
+    subscription.userAgent = req.headers['user-agent'];
 
     console.log('收到推送订阅请求:', {
       userId,
       endpoint: subscription.endpoint,
-      hasKeys: !!subscription.keys
+      userAgent: subscription.userAgent,
+      timestamp: new Date().toISOString()
     });
 
-    // 保存订阅
-    const success = pushService.saveSubscription(subscription, userId);
+    // Save subscription
+    const success = await pushService.saveSubscription(subscription, userId);
     
     if (success) {
       return successResponse(res, 200, '订阅保存成功');
@@ -142,8 +131,8 @@ router.post('/send-all', authenticateToken, async (req, res) => {
     const payload = {
       title,
       body,
-      icon: icon || '/images/icon-192x192.png',
-      badge: badge || '/images/badge-72x72.png',
+      icon: icon || '/icons/icon-192x192.png',
+      badge: badge || '/icons/icon-96x96.png',
       data: data || {},
       timestamp: new Date().toISOString()
     };
@@ -175,8 +164,8 @@ router.post('/send-user', authenticateToken, async (req, res) => {
     const payload = {
       title,
       body,
-      icon: icon || '/images/icon-192x192.png',
-      badge: badge || '/images/badge-72x72.png',
+      icon: icon || '/icons/icon-192x192.png',
+      badge: badge || '/icons/icon-96x96.png',
       data: data || {},
       timestamp: new Date().toISOString()
     };
@@ -208,8 +197,8 @@ router.post('/send-subscription', authenticateToken, async (req, res) => {
     const payload = {
       title,
       body,
-      icon: icon || '/images/icon-192x192.png',
-      badge: badge || '/images/badge-72x72.png',
+      icon: icon || '/icons/icon-192x192.png',
+      badge: badge || '/icons/icon-96x96.png',
       data: data || {},
       timestamp: new Date().toISOString()
     };

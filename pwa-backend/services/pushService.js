@@ -1,20 +1,33 @@
 const webpush = require('web-push');
+const { pool } = require('../config/database');
 
 class PushService {
   constructor() {
     // VAPID密钥配置
-    this.publicKey = process.env.VAPID_PUBLIC_KEY || 'your_vapid_public_key';
-    this.privateKey = process.env.VAPID_PRIVATE_KEY || 'your_vapid_private_key';
+    this.publicKey = process.env.VAPID_PUBLIC_KEY;
+    this.privateKey = process.env.VAPID_PRIVATE_KEY;
+    
+    if (!this.publicKey || !this.privateKey) {
+      console.error('VAPID keys not found in environment variables');
+      throw new Error('VAPID configuration is missing');
+    }
     
     // 设置VAPID详情
+    const contact = process.env.VAPID_CONTACT || 'mailto:your-email@example.com';
+    console.log('Initializing VAPID with:', {
+      contact,
+      publicKeyLength: this.publicKey.length,
+      timestamp: new Date().toISOString()
+    });
+    
     webpush.setVapidDetails(
-      'mailto:admin@example.com',
+      contact,
       this.publicKey,
       this.privateKey
     );
     
-    // 存储订阅信息（实际项目中应该存储在数据库中）
-    this.subscriptions = [];
+    // 使用现有的数据库连接池
+    this.pool = pool;
   }
 
   /**
@@ -31,36 +44,87 @@ class PushService {
    * @param {number} userId 用户ID（可选）
    * @returns {boolean} 保存是否成功
    */
-  saveSubscription(subscription, userId = null) {
+  async saveSubscription(subscription, userId = null) {
+    let connection;
     try {
+      console.log('保存推送订阅，详细信息:', {
+        endpoint: subscription.endpoint,
+        userId,
+        keys: subscription.keys,
+        userAgent: subscription.userAgent,
+        timestamp: new Date().toISOString()
+      });
+
+      connection = await this.pool.getConnection();
+      await connection.beginTransaction();
+
       // 检查是否已存在相同的订阅
-      const existingIndex = this.subscriptions.findIndex(sub => 
-        sub.endpoint === subscription.endpoint
+      const [rows] = await connection.query(
+        'SELECT id FROM push_subscriptions WHERE endpoint = ?',
+        [subscription.endpoint]
       );
-      
-      if (existingIndex !== -1) {
+
+      if (rows.length > 0) {
         // 更新现有订阅
-        this.subscriptions[existingIndex] = {
-          ...subscription,
+        await connection.query(
+          `UPDATE push_subscriptions 
+           SET auth_key = ?, 
+               p256dh_key = ?, 
+               user_id = ?, 
+               user_agent = ?,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE endpoint = ?`,
+          [
+            subscription.keys.auth,
+            subscription.keys.p256dh,
+            userId,
+            subscription.userAgent,
+            subscription.endpoint
+          ]
+        );
+        console.log('更新现有订阅:', {
+          endpoint: subscription.endpoint,
           userId,
-          createdAt: this.subscriptions[existingIndex].createdAt,
-          updatedAt: new Date()
-        };
+          updatedAt: new Date().toISOString()
+        });
       } else {
         // 添加新订阅
-        this.subscriptions.push({
-          ...subscription,
+        await connection.query(
+          `INSERT INTO push_subscriptions 
+           (endpoint, auth_key, p256dh_key, user_id, user_agent)
+           VALUES (?, ?, ?, ?, ?)`,
+          [
+            subscription.endpoint,
+            subscription.keys.auth,
+            subscription.keys.p256dh,
+            userId,
+            subscription.userAgent
+          ]
+        );
+        console.log('添加新订阅:', {
+          endpoint: subscription.endpoint,
           userId,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: new Date().toISOString()
         });
       }
-      
-      console.log('推送订阅已保存:', subscription.endpoint);
+
+      const [countRows] = await connection.query(
+        'SELECT COUNT(*) as count FROM push_subscriptions'
+      );
+      console.log('当前订阅总数:', countRows[0].count);
+
+      await connection.commit();
       return true;
     } catch (error) {
+      if (connection) {
+        await connection.rollback();
+      }
       console.error('保存推送订阅失败:', error);
       return false;
+    } finally {
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -88,8 +152,26 @@ class PushService {
    * 获取所有订阅
    * @returns {Array} 订阅列表
    */
-  getAllSubscriptions() {
-    return this.subscriptions;
+  async getAllSubscriptions() {
+    try {
+      const [rows] = await this.pool.query(
+        `SELECT endpoint, auth_key, p256dh_key, user_id, user_agent 
+         FROM push_subscriptions`
+      );
+      
+      return rows.map(row => ({
+        endpoint: row.endpoint,
+        keys: {
+          auth: row.auth_key,
+          p256dh: row.p256dh_key
+        },
+        userId: row.user_id,
+        userAgent: row.user_agent
+      }));
+    } catch (error) {
+      console.error('获取订阅列表失败:', error);
+      return [];
+    }
   }
 
   /**
@@ -97,8 +179,28 @@ class PushService {
    * @param {number} userId 用户ID
    * @returns {Array} 用户订阅列表
    */
-  getSubscriptionsByUserId(userId) {
-    return this.subscriptions.filter(sub => sub.userId === userId);
+  async getSubscriptionsByUserId(userId) {
+    try {
+      const [rows] = await this.pool.query(
+        `SELECT endpoint, auth_key, p256dh_key, user_id, user_agent 
+         FROM push_subscriptions 
+         WHERE user_id = ?`,
+        [userId]
+      );
+      
+      return rows.map(row => ({
+        endpoint: row.endpoint,
+        keys: {
+          auth: row.auth_key,
+          p256dh: row.p256dh_key
+        },
+        userId: row.user_id,
+        userAgent: row.user_agent
+      }));
+    } catch (error) {
+      console.error('获取用户订阅列表失败:', error);
+      return [];
+    }
   }
 
   /**
@@ -113,18 +215,30 @@ class PushService {
       errors: []
     };
 
-    if (this.subscriptions.length === 0) {
+    // 从数据库获取所有订阅
+    const subscriptions = await this.getAllSubscriptions();
+
+    if (subscriptions.length === 0) {
       return {
         ...results,
         message: '没有可用的订阅'
       };
     }
 
-    const pushPromises = this.subscriptions.map(async (subscription, index) => {
+    const pushPromises = subscriptions.map(async (subscription) => {
       try {
+        console.log('准备发送推送:', {
+          endpoint: subscription.endpoint,
+          payload: JSON.stringify(payload),
+          timestamp: new Date().toISOString()
+        });
+        
         await webpush.sendNotification(subscription, JSON.stringify(payload));
         results.success++;
-        console.log(`推送成功: ${subscription.endpoint}`);
+        console.log('推送成功:', {
+          endpoint: subscription.endpoint,
+          timestamp: new Date().toISOString()
+        });
       } catch (error) {
         results.failed++;
         results.errors.push({
@@ -132,10 +246,23 @@ class PushService {
           error: error.message
         });
         
-        // 如果是订阅失效，删除该订阅
+        // 如果是订阅失效，从数据库中删除该订阅
         if (error.statusCode === 410 || error.statusCode === 404) {
           console.log('订阅已失效，删除:', subscription.endpoint);
-          this.subscriptions.splice(index, 1);
+          let connection;
+          try {
+            connection = await this.pool.getConnection();
+            await connection.execute(
+              'DELETE FROM push_subscriptions WHERE endpoint = ?',
+              [subscription.endpoint]
+            );
+          } catch (dbError) {
+            console.error('删除失效订阅失败:', dbError);
+          } finally {
+            if (connection) {
+              connection.release();
+            }
+          }
         } else {
           console.error('推送失败:', error);
         }
@@ -157,7 +284,7 @@ class PushService {
    * @returns {Promise<Object>} 推送结果
    */
   async sendToUser(userId, payload) {
-    const userSubscriptions = this.getSubscriptionsByUserId(userId);
+    const userSubscriptions = await this.getSubscriptionsByUserId(userId);
     
     if (userSubscriptions.length === 0) {
       return {
@@ -185,10 +312,23 @@ class PushService {
           error: error.message
         });
         
-        // 如果是订阅失效，删除该订阅
+        // 如果是订阅失效，从数据库中删除该订阅
         if (error.statusCode === 410 || error.statusCode === 404) {
           console.log('订阅已失效，删除:', subscription.endpoint);
-          this.removeSubscription(subscription.endpoint);
+          let connection;
+          try {
+            connection = await this.pool.getConnection();
+            await connection.execute(
+              'DELETE FROM push_subscriptions WHERE endpoint = ?',
+              [subscription.endpoint]
+            );
+          } catch (dbError) {
+            console.error('删除失效订阅失败:', dbError);
+          } finally {
+            if (connection) {
+              connection.release();
+            }
+          }
         } else {
           console.error('推送给用户失败:', error);
         }
@@ -210,16 +350,31 @@ class PushService {
    * @returns {Promise<Object>} 推送结果
    */
   async sendToSubscription(endpoint, payload) {
-    const subscription = this.subscriptions.find(sub => sub.endpoint === endpoint);
-    
-    if (!subscription) {
-      return {
-        success: false,
-        message: '订阅不存在'
-      };
-    }
-
+    let connection;
     try {
+      connection = await this.pool.getConnection();
+      const [rows] = await connection.query(
+        `SELECT endpoint, auth_key, p256dh_key, user_id, user_agent 
+         FROM push_subscriptions 
+         WHERE endpoint = ?`,
+        [endpoint]
+      );
+
+      if (rows.length === 0) {
+        return {
+          success: false,
+          message: '订阅不存在'
+        };
+      }
+
+      const subscription = {
+        endpoint: rows[0].endpoint,
+        keys: {
+          auth: rows[0].auth_key,
+          p256dh: rows[0].p256dh_key
+        }
+      };
+
       await webpush.sendNotification(subscription, JSON.stringify(payload));
       console.log(`推送成功: ${endpoint}`);
       return {
@@ -229,10 +384,17 @@ class PushService {
     } catch (error) {
       console.error('推送失败:', error);
       
-      // 如果是订阅失效，删除该订阅
+      // 如果是订阅失效，从数据库中删除该订阅
       if (error.statusCode === 410 || error.statusCode === 404) {
         console.log('订阅已失效，删除:', endpoint);
-        this.removeSubscription(endpoint);
+        try {
+          await connection.execute(
+            'DELETE FROM push_subscriptions WHERE endpoint = ?',
+            [endpoint]
+          );
+        } catch (dbError) {
+          console.error('删除失效订阅失败:', dbError);
+        }
       }
       
       return {
@@ -240,6 +402,10 @@ class PushService {
         message: error.message,
         error: error
       };
+    } finally {
+      if (connection) {
+        connection.release();
+      }
     }
   }
 }

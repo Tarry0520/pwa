@@ -9,7 +9,7 @@
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
-import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies'
+import { StaleWhileRevalidate } from 'workbox-strategies'
 
 self.skipWaiting()
 clientsClaim()
@@ -72,15 +72,15 @@ registerRoute(
   }),
 )
 
-// 缓存静态资源 - 使用CacheFirst策略
+// 缓存静态资源 - 使用StaleWhileRevalidate策略来确保及时更新
 registerRoute(
   ({ request }) =>
     request.destination === 'image' ||
     request.destination === 'font' ||
     request.destination === 'style' ||
     request.destination === 'script',
-  new CacheFirst({
-    cacheName: 'static-resources',
+  new StaleWhileRevalidate({
+    cacheName: 'static-resources-' + (new Date().toISOString().split('T')[0]),
   }),
 )
 self.addEventListener('push', function (event) {
@@ -90,8 +90,8 @@ self.addEventListener('push', function (event) {
   const title = data.title || '新消息'
   const options = {
     body: data.body || '你有新的通知',
-    icon: '/icons/hand.png',
-    badge: '/icons/hand.png',
+    icon: '/icons/icon-64x64.png',
+    badge: '/icons/icon-64x64.png',
   }
 
   event.waitUntil(self.registration.showNotification(title, options))

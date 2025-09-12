@@ -6,9 +6,9 @@ frontend:
         - npm install
     build:
       commands:
-        - npm run build
+        - npm run build:pwa
   artifacts:
-    baseDirectory: dist/spa
+    baseDirectory: dist/pwa
     files:
       - '**/*'
   cache:
@@ -40,6 +40,6 @@ frontend:
         - key: 'Service-Worker-Allowed'
           value: '/'
   redirects:
-    - source: '/<*>'
+    - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf|map|json)$)([^.]+$)/'
       target: '/index.html'
       status: '200'

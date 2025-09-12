@@ -68,6 +68,22 @@ async function initDatabase() {
         console.log('手机号字段可能已存在或添加失败:', error.message);
       }
     }
+
+    // 创建推送订阅表
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        endpoint VARCHAR(512) NOT NULL,
+        auth_key VARCHAR(255) NOT NULL,
+        p256dh_key VARCHAR(255) NOT NULL,
+        user_id BIGINT,
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_endpoint (endpoint),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
     
     console.log('数据库表初始化成功');
     connection.release();

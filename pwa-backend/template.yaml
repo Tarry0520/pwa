@@ -18,15 +18,23 @@ Globals:
     Environment:
       Variables:
         NODE_ENV: !Ref Environment
-        DB_HOST: "18.139.162.43"
+        DB_HOST: "52.221.153.106"
         DB_PORT: "3306"
         DB_USER: "xxgjj"
         DB_PASSWORD: "123456"
         DB_NAME: "pwa_backend"
-        REDIS_HOST: "18.139.162.43"
+        REDIS_HOST: "52.221.153.106"
         REDIS_PORT: "6379"
         REDIS_PASSWORD: "1234567890"
         CORS_ORIGIN: "*"
+        VAPID_PUBLIC_KEY: "your_vapid_public_key"
+        VAPID_PRIVATE_KEY: "your_vapid_private_key"
+        VAPID_CONTACT: "mailto:your-email@example.com"
+        MICROSOFT_CLIENT_ID: "your_client_id"
+        MICROSOFT_CLIENT_SECRET: "your_client_secret"
+        MICROSOFT_REDIRECT_URI: "https://byoxycpzeg.execute-api.ap-southeast-1.amazonaws.com/sso/callback"
+        MICROSOFT_TENANT_ID: "common"
+        FRONTEND_URL: "https://dev.d3e0epva6o5gvq.amplifyapp.com"
 
 Resources:
   PwaApi:

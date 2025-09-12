@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "pwc-pwa-backend-sam"
+resolve_s3 = true
+s3_prefix = "pwc-pwa-backend-sam"
+region = "ap-southeast-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"dev\""
+image_repositories = []

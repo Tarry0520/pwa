@@ -37,6 +37,10 @@ export default defineConfig((ctx) => {
         browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
         node: 'node20',
       },
+      // Add version to force cache busting
+      env: {
+        APP_VERSION: Date.now()
+      },
 
       vueRouterMode: 'history', // available values: 'hash', 'history'
       publicPath: '/',
@@ -154,7 +158,7 @@ export default defineConfig((ctx) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'GenerateSW',
+      workboxMode: 'InjectManifest',
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentials: false,
@@ -164,10 +168,9 @@ export default defineConfig((ctx) => {
         json.scope = '/'
         return json
       },
-      extendGenerateSWOptions (cfg) {
-        cfg.navigateFallback = '/index.html'
-        cfg.navigateFallbackAllowlist = [/^(?!.*\.(js|css|json|png|jpg|gif|ico|svg|woff|woff2|ttf|map)).*$/]
-        return cfg
+      sourceFiles: {
+        pwaServiceWorker: 'src-pwa/custom-service-worker',
+        pwaRegisterServiceWorker: 'src-pwa/register-service-worker'
       }
     },
 

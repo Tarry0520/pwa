@@ -2,3 +2,5 @@
 pwa-backend/node_modules/
 
 docker/data/
+
+pwa-backend/.aws-sam/

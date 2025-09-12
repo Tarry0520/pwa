@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <div class="text-center">
-      <!-- <h3>Welcome Hand Internal App</h3> -->
+      <h3>Welcome PWA Demo App</h3>
       <div v-if="userStore.isLoggedIn" class="q-mt-md">
         <p>Welcome back, {{ userStore.currentUser?.name || userStore.currentUser?.email }}!</p>
       </div>

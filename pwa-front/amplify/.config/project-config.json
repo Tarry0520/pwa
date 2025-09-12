@@ -1,4 +1,5 @@
 {
+  "whyContinueWithGen1": "Prefer not to answer",
   "projectName": "pwafront",
   "version": "3.1",
   "frontend": "javascript",
@@ -6,7 +7,7 @@
     "framework": "vue",
     "config": {
       "SourceDir": "src",
-      "DistributionDir": "dist/spa",
+      "DistributionDir": "dist/pwa",
       "BuildCommand": "npm run build",
       "StartCommand": "npm run serve"
     }

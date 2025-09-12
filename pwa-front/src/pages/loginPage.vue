@@ -229,7 +229,7 @@ async function loginWithMicrosoft() {
   //   // Backup solution
   //   window.location.href = 'https://quasar-api.handwx.cn:8083/sso/login'
   // }
-  window.location.href = 'https://quasar-api.handwx.cn:8083/sso/microsoft'
+  window.location.href = 'https://byoxycpzeg.execute-api.ap-southeast-1.amazonaws.com/sso/microsoft'
 
 }
 
