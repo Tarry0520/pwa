@@ -1,5 +1,9 @@
-// 启用装饰器支持
-require('reflect-metadata');
+// 启用装饰器支持（在缺少依賴時不阻擋啟動）
+try {
+  require('reflect-metadata')
+} catch (e) {
+  console.warn('reflect-metadata 未安裝，略過（POC 模式）')
+}
 
 const createError = require('http-errors');
 const express = require('express');

@@ -32,6 +32,14 @@
             <q-item-label>Home</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item to="/transcript" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="assignment" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>成績單</q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item to="/subscription" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="notification_add" />

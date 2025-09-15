@@ -118,7 +118,7 @@ router.get('/subscriptions', authenticateToken, async (req, res) => {
  * 发送推送消息给所有用户
  * POST /push/send-all
  */
-router.post('/send-all', authenticateToken, async (req, res) => {
+router.post('/send-all', async (req, res) => {
   try {
     const { title, body, icon, badge, data } = req.body;
 

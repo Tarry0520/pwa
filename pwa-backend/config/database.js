@@ -76,7 +76,7 @@ async function initDatabase() {
         endpoint VARCHAR(512) NOT NULL,
         auth_key VARCHAR(255) NOT NULL,
         p256dh_key VARCHAR(255) NOT NULL,
-        user_id BIGINT,
+        user_id INT,
         user_agent TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
