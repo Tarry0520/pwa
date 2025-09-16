@@ -8,7 +8,7 @@ import { Notify } from 'quasar'
 // "export default () => {}" function below (which runs individually
 // for each client)
 const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://byoxycpzeg.execute-api.ap-southeast-1.amazonaws.com'
 })
 
 // Add request interceptor to automatically carry token in request headers
