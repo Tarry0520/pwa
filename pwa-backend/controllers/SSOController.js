@@ -1,26 +1,26 @@
 /**
  * SSO Controller
- * 处理单点登录相关的业务逻辑和字段转换
+ * Handles single sign-on related logic and field conversions
  */
 
 const BaseController = require('./BaseController');
 
 class SSOController extends BaseController {
   /**
-   * 构造函数
-   * @param {Object} userService - 用户服务实例
+   * Constructor
+   * @param {Object} userService - user service instance
    */
   constructor(userService) {
     super(userService);
   }
 
   /**
-   * 获取OAuth用户信息
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Get OAuth user info
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async getUserInfo(req, res) {
-    // 从Authorization头获取token
+    // Read token from Authorization header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -29,7 +29,7 @@ class SSOController extends BaseController {
     }
 
     try {
-      // 验证token并获取用户信息
+      // Verify token and get user info
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
@@ -45,15 +45,15 @@ class SSOController extends BaseController {
         return this.sendError(res, 404, 'User not found');
       }
     } catch (error) {
-      console.error('获取OAuth用户信息失败:', error);
+      console.error('Get OAuth user info failed:', error);
       return this.sendError(res, 401, 'Invalid access token');
     }
   }
 
   /**
-   * 获取OAuth服务状态
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Get OAuth service status
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   getStatus(req, res) {
     const statusData = {
@@ -69,14 +69,14 @@ class SSOController extends BaseController {
   }
 
   /**
-   * OAuth登出
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * OAuth logout
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   logout(req, res) {
     req.session.destroy((err) => {
       if (err) {
-        console.error('Session销毁失败:', err);
+        console.error('Failed to destroy session:', err);
         return this.sendError(res, 500, 'Logout failed');
       }
       

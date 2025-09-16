@@ -23,20 +23,20 @@ function sampleAnnouncements() {
   const items = [
     {
       id: 'a-1001',
-      title: '開學注意事項',
-      body: '請留意開學日期與課表調整。',
+      title: 'Back-to-School Notes',
+      body: 'Please review the semester start date and schedule updates.',
       attachments: [
-        { key: 'a-1001/handbook.pdf', name: '新生手冊.pdf' },
-        { key: 'a-1001/schedule.png', name: '課表示意圖.png' },
+        { key: 'a-1001/handbook.pdf', name: 'Student Handbook.pdf' },
+        { key: 'a-1001/schedule.png', name: 'Sample Schedule.png' },
       ],
       publishedAt: yesterdayIso,
       updatedAt: yesterdayIso,
     },
     {
       id: 'a-1002',
-      title: '系學會活動報名',
-      body: '本週五截止，名額有限，敬請把握。',
-      attachments: [{ key: 'a-1002/poster.jpg', name: '活動海報.jpg' }],
+      title: 'Department Activity Registration',
+      body: 'Registration closes this Friday. Seats are limited.',
+      attachments: [{ key: 'a-1002/poster.jpg', name: 'Event Poster.jpg' }],
       publishedAt: nowIso,
       updatedAt: nowIso,
     },
@@ -68,18 +68,18 @@ router.get('/announcements', async (req, res) => {
 // POST /announcements/:id/read
 router.post('/announcements/:id/read', authenticateToken, async (req, res) => {
   const { id } = req.params
-  if (!id) return validationErrorResponse(res, '缺少公告 ID')
+  if (!id) return validationErrorResponse(res, 'Announcement ID is required')
 
   // User-level dedup only
   const userId = req.user?.id
-  if (!userId) return validationErrorResponse(res, '未授權的請求')
+  if (!userId) return validationErrorResponse(res, 'Unauthorized request')
 
   try {
     const result = await markAsRead({ announcementId: id, userId })
     const message = result.duplicated ? 'Already marked as read' : 'Marked as read'
     return successResponse(res, 200, message, { id, readAt: result.readAt, duplicated: result.duplicated })
   } catch (e) {
-    return validationErrorResponse(res, '標記已讀失敗')
+    return validationErrorResponse(res, 'Failed to mark as read')
   }
 })
 

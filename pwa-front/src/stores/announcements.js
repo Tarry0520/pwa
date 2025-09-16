@@ -21,7 +21,7 @@ export const useAnnouncementsStore = defineStore('announcements', {
         this.items = records
         this.lastSyncedAt = lastSyncedAt
       } catch (e) {
-        this.error = e?.message || '載入公告失敗'
+        this.error = e?.message || 'Failed to load announcements'
       } finally {
         this.loading = false
       }
@@ -48,7 +48,7 @@ export const useAnnouncementsStore = defineStore('announcements', {
         await setMeta('announcements:lastSyncedAt', this.lastSyncedAt)
         return { ok: true }
       } catch (e) {
-        this.error = e?.message || '公告同步失敗'
+        this.error = e?.message || 'Announcements sync failed'
         return { ok: false, error: this.error }
       } finally {
         this.loading = false
@@ -66,7 +66,7 @@ export const useAnnouncementsStore = defineStore('announcements', {
         }
         return { ok: true }
       } catch (e) {
-        return { ok: false, error: e?.message || '標記已讀失敗' }
+        return { ok: false, error: e?.message || 'Failed to mark as read' }
       }
     },
   },

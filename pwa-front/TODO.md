@@ -1,38 +1,38 @@
-# 前端待辦事項（按里程碑）
+# Frontend TODO Items (by Milestone)
 
-## M1 成績單（離線優先）
-- [x] 新增路由與頁面 `src/pages/TranscriptPage.vue`
-- [x] 建立 store `src/stores/transcripts.ts`（state：items、lastSyncedAt；actions：loadFromDb、sync、exportPdf）
-- [x] 建立 `src/services/db.ts`（transcripts 表；基本 CRUD 與索引）
-- [x] 建立 `src/services/api.ts`（GET `/me/transcripts?terms=`；離線優先與 `?since=` 支援）
-- [x] 頁面 UI：骨架屏、最後同步時間、下拉/按鈕刷新
-- [x] PDF 匯出樣式與功能（無網也可用）
- - [x] 近兩學年預取（terms 建議值產生）
+## M1 Transcripts (Offline First)
+- [x] Add route and page `src/pages/TranscriptPage.vue`
+- [x] Create store `src/stores/transcripts.ts` (state: items, lastSyncedAt; actions: loadFromDb, sync, exportPdf)
+- [x] Create `src/services/db.ts` (transcripts table; basic CRUD and indexing)
+- [x] Create `src/services/api.ts` (GET `/me/transcripts?terms=`; offline first with `?since=` support)
+- [x] Page UI: skeleton screen, last sync time, dropdown/button refresh
+- [x] PDF export styling and functionality (works offline)
+ - [x] Recent two academic years prefetch (terms suggestion value generation)
 
-備註：ETag/If-None-Match（304）依 DEV_PLAN 延至 M4 實作；M1 僅需 `?since=` 增量。
+Note: ETag/If-None-Match (304) implementation deferred to M4 per DEV_PLAN; M1 only needs `?since=` incremental.
 
-## M2 課表/行事曆 + 公告
-- [x] 新增 `src/pages/SchedulePage.vue` 與 store `src/stores/schedule.js`
-- [x] 新增 `src/pages/AnnouncementsPage.vue` 與 store `src/stores/announcements.js`
-- [x] db.js：schedule、events、announcements 表結構
-- [x] api.js：`GET /schedule?term=`、`GET /events?range=`、`GET /announcements?since=`
-- [x] SW：附件 CacheFirst；清理舊版附件快取
-- [x] UI：公告已讀狀態本地化與增量同步
+## M2 Schedule/Calendar + Announcements
+- [x] Add `src/pages/SchedulePage.vue` and store `src/stores/schedule.js`
+- [x] Add `src/pages/AnnouncementsPage.vue` and store `src/stores/announcements.js`
+- [x] db.js: schedule, events, announcements table structure
+- [x] api.js: `GET /schedule?term=`, `GET /events?range=`, `GET /announcements?since=`
+- [x] SW: attachment CacheFirst; cleanup old attachment cache
+- [x] UI: announcement read status localization and incremental sync
 
-## M3 出缺勤 + 請假（含 Background Sync）
-- [ ] 新增 `src/pages/AttendancePage.vue` 與 store `src/stores/attendance.ts`
-- [ ] db.ts：attendance 表與 leaveQueue 佇列
-- [ ] api.ts：`GET /attendance?term=`、`GET /leave-requests?mine`、`POST /leave-requests`
-- [ ] SW：Background Sync 佇列與重試、idempotencyKey 支援
-- [ ] UI：離線填寫請假單、送出佇列提示與衝突處理
+## M3 Attendance + Leave Requests (including Background Sync)
+- [x] Add `src/pages/AttendancePage.vue` and store `src/stores/attendance.js`
+- [x] db.js: attendance table and leaveQueue queue
+- [x] api.js: `GET /attendance?term=`, `GET /leave-requests?mine`, `POST /leave-requests`
+- [ ] SW: Background Sync queue and retry, idempotencyKey support (pending)
+- [x] UI: offline leave request form, queue submission prompt and basic conflict handling
 
-## M4 體驗與健全
-- [ ] 離線徽章與全域網路狀態提示
-- [ ] 錯誤/衝突提示、重試與回滾
-- [ ] 無障礙細節、行動端互動（按鈕大小、觸控區）
+## M4 Experience and Robustness
+- [ ] Offline badge and global network status indicator
+- [ ] Error/conflict prompts, retry and rollback
+- [ ] Accessibility details, mobile interaction (button size, touch areas)
  
 
-## 補充
-- [ ] 調整 `src-pwa/custom-service-worker.js`：加入 Background Sync、快取分組命名與版本清理
-- [ ] 依 quasar.config.js 確認 PWA 注入檔路徑與 manifest 設置
-- [ ] 針對大資料（學期）實作分段載入與狀態提示
+## Additional
+- [ ] Adjust `src-pwa/custom-service-worker.js`: add Background Sync, cache group naming and version cleanup
+- [ ] Confirm PWA injection file paths and manifest settings per quasar.config.js
+- [ ] Implement segmented loading and status prompts for large data (terms)

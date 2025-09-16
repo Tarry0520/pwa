@@ -1,42 +1,42 @@
 /**
- * 字段转换工具类
- * 处理数据库字段与前端字段的转换
- * 使用 humps 库进行自动转换
+ * Field transformation utilities
+ * Convert between DB fields and frontend fields
+ * Uses the humps library for automatic conversion
  */
 
 const humps = require('humps');
 
 /**
- * 字段转换器类
- * 使用 humps 库进行字段名转换
+ * Field transformer class
+ * Performs key conversion using humps
  */
 class FieldTransformer {
   /**
-   * 将下划线命名转换为驼峰命名
-   * @param {string} str - 下划线字符串
-   * @returns {string} 驼峰字符串
-   * @deprecated 建议使用 humps.camelize 替代
+   * Convert snake_case to camelCase
+   * @param {string} str - snake string
+   * @returns {string} camel string
+   * @deprecated Prefer humps.camelize
    */
   static toCamelCase(str) {
     return humps.camelize(str);
   }
 
   /**
-   * 将驼峰命名转换为下划线命名
-   * @param {string} str - 驼峰字符串
-   * @returns {string} 下划线字符串
-   * @deprecated 建议使用 humps.decamelize 替代
+   * Convert camelCase to snake_case
+   * @param {string} str - camel string
+   * @returns {string} snake string
+   * @deprecated Prefer humps.decamelize
    */
   static toSnakeCase(str) {
     return humps.decamelize(str);
   }
 
   /**
-   * 将数据库字段转换为前端字段（下划线转驼峰）
-   * @param {Object|Array} data - 数据
-   * @param {Object} options - 转换选项
-   * @param {Array} options.exclude - 排除的字段名
-   * @returns {Object|Array} 转换后的数据
+   * Convert DB fields to frontend fields (snake -> camel)
+   * @param {Object|Array} data - data
+   * @param {Object} options - options
+   * @param {Array} options.exclude - field names to exclude
+   * @returns {Object|Array} transformed
    */
   static toFrontend(data, options = {}) {
     if (!data || typeof data !== 'object') {
@@ -45,7 +45,7 @@ class FieldTransformer {
 
     return humps.camelizeKeys(data, {
       process: (key, convert, opts) => {
-        // 排除不需要转换的字段
+        // Skip excluded fields
         if (options.exclude && options.exclude.includes(key)) {
           return key;
         }
@@ -55,11 +55,11 @@ class FieldTransformer {
   }
 
   /**
-   * 将前端字段转换为数据库字段（驼峰转下划线）
-   * @param {Object|Array} data - 数据
-   * @param {Object} options - 转换选项
-   * @param {Array} options.exclude - 排除的字段名
-   * @returns {Object|Array} 转换后的数据
+   * Convert frontend fields to DB fields (camel -> snake)
+   * @param {Object|Array} data - data
+   * @param {Object} options - options
+   * @param {Array} options.exclude - field names to exclude
+   * @returns {Object|Array} transformed
    */
   static toDatabase(data, options = {}) {
     if (!data || typeof data !== 'object') {
@@ -69,7 +69,7 @@ class FieldTransformer {
     return humps.decamelizeKeys(data, {
       separator: '_',
       process: (key, convert, opts) => {
-        // 排除不需要转换的字段
+        // Skip excluded fields
         if (options.exclude && options.exclude.includes(key)) {
           return key;
         }
@@ -79,10 +79,10 @@ class FieldTransformer {
   }
 
   /**
-   * 转换请求数据（前端 -> 数据库）
-   * @param {Object} req - Express请求对象
-   * @param {Object} options - 转换选项
-   * @returns {Object} 转换后的请求对象
+   * Transform request data (frontend -> DB)
+   * @param {Object} req - Express request
+   * @param {Object} options - options
+   * @returns {Object} transformed request
    */
   static transformRequest(req, options = {}) {
     const transformedReq = { ...req };
@@ -103,10 +103,10 @@ class FieldTransformer {
   }
 
   /**
-   * 转换响应数据（数据库 -> 前端）
-   * @param {Object} responseData - 响应数据
-   * @param {Object} options - 转换选项
-   * @returns {Object} 转换后的响应数据
+   * Transform response data (DB -> frontend)
+   * @param {Object} responseData - response data
+   * @param {Object} options - options
+   * @returns {Object} transformed data
    */
   static transformResponse(responseData, options = {}) {
     if (!responseData || typeof responseData !== 'object') {
@@ -117,11 +117,11 @@ class FieldTransformer {
   }
 
   /**
-   * 批量转换对象数组
-   * @param {Array} dataArray - 对象数组
-   * @param {Function} transformFn - 转换函数 (toFrontend 或 toDatabase)
-   * @param {Object} options - 转换选项
-   * @returns {Array} 转换后的数组
+   * Batch-transform an array of objects
+   * @param {Array} dataArray - array of objects
+   * @param {Function} transformFn - transform function (toFrontend or toDatabase)
+   * @param {Object} options - options
+   * @returns {Array} transformed array
    */
   static transformArray(dataArray, transformFn, options = {}) {
     if (!Array.isArray(dataArray)) {

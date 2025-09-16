@@ -1,46 +1,46 @@
 /**
- * 用户Controller
- * 处理用户相关的业务逻辑和字段转换
+ * User controller
+ * Handles user-related logic and field transformations
  */
 
 const BaseController = require('./BaseController');
 
 class UserController extends BaseController {
   /**
-   * 构造函数
-   * @param {Object} userService - 用户服务实例
+   * Constructor
+   * @param {Object} userService - user service instance
    */
   constructor(userService) {
     super(userService);
   }
 
   /**
-   * 用户注册
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Register user
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async register(req, res) {
-    // 转换请求数据（前端字段 -> 数据库字段）
+    // Transform request (frontend -> DB fields)
     const transformedReq = this.transformRequest(req);
     const { email, password } = transformedReq.body;
 
-    // 验证必填字段
+    // Validate required
     const requiredErrors = this.validateRequired({ email, password }, ['email', 'password']);
     if (requiredErrors.length > 0) {
       return this.sendValidationError(res, requiredErrors);
     }
 
-    // 验证邮箱格式
+    // Validate email
     if (!this.validateEmail(email)) {
       return this.sendValidationError(res, 'Invalid email format');
     }
 
-    // 验证密码长度
+    // Validate password length
     if (!this.validatePassword(password)) {
       return this.sendValidationError(res, 'Password must be at least 6 characters');
     }
 
-    // 调用服务层
+    // Call service
     const result = await this.handleAsync(
       () => this.service.createUser({ email, password }),
       res,
@@ -53,22 +53,22 @@ class UserController extends BaseController {
   }
 
   /**
-   * 用户登录
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Login
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async login(req, res) {
-    // 转换请求数据
+    // Transform request
     const transformedReq = this.transformRequest(req);
     const { identifier, password } = transformedReq.body;
 
-    // 验证必填字段
+    // Validate required
     const requiredErrors = this.validateRequired({ identifier, password }, ['identifier', 'password']);
     if (requiredErrors.length > 0) {
       return this.sendValidationError(res, requiredErrors);
     }
 
-    // 调用服务层
+    // Call service
     const result = await this.handleAsync(
       () => this.service.login(identifier, password),
       res,
@@ -76,7 +76,7 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      // 转换登录响应数据
+      // Build response
       const transformedResult = {
         user: result.user,
         token: result.token,
@@ -87,9 +87,9 @@ class UserController extends BaseController {
   }
 
   /**
-   * 用户登出
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Logout
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async logout(req, res) {
     const token = req.headers['authorization'].split(' ')[1];
@@ -107,9 +107,9 @@ class UserController extends BaseController {
   }
 
   /**
-   * 获取用户信息
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Get user info
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async getProfile(req, res) {
     const userId = req.user.id;
@@ -128,26 +128,26 @@ class UserController extends BaseController {
   }
 
   /**
-   * 更新用户信息
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Update user info
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async updateProfile(req, res) {
-    // 直接使用req.body（前端发送的驼峰格式）
+    // Use req.body as-is (camelCase from frontend)
     const { displayName, email, phone } = req.body;
     const userId = req.user.id;
 
-    // 验证至少有一个字段要更新
+    // Require at least one field
     if (!displayName && !email && !phone) {
       return this.sendValidationError(res, 'At least one field must be provided for update');
     }
 
-    // 验证邮箱格式（如果提供了邮箱）
+    // Validate email if provided
     if (email && !this.validateEmail(email)) {
       return this.sendValidationError(res, 'Invalid email format');
     }
 
-    // 调用服务层
+    // Call service
     const result = await this.handleAsync(
       () => this.service.updateUserProfile(userId, { 
         displayName,
@@ -164,28 +164,28 @@ class UserController extends BaseController {
   }
 
   /**
-   * 修改密码
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Change password
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   async changePassword(req, res) {
-    // 直接使用req.body（前端发送的驼峰格式）
+    // Use req.body as-is (camelCase)
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
-    const currentToken = req.headers['authorization']?.split(' ')[1]; // 获取当前token
+    const currentToken = req.headers['authorization']?.split(' ')[1]; // current token
 
-    // 验证必填字段
+    // Validate required
     const requiredErrors = this.validateRequired({ oldPassword, newPassword }, ['oldPassword', 'newPassword']);
     if (requiredErrors.length > 0) {
       return this.sendValidationError(res, requiredErrors);
     }
 
-    // 验证新密码长度
+    // Validate new password length
     if (!this.validatePassword(newPassword)) {
       return this.sendValidationError(res, 'New password must be at least 6 characters');
     }
 
-    // 调用服务层（传递当前token用于清除）
+    // Call service (clear current token as well)
     const result = await this.handleAsync(
       () => this.service.changePassword(userId, oldPassword, newPassword, currentToken),
       res,
@@ -198,9 +198,9 @@ class UserController extends BaseController {
   }
 
   /**
-   * 验证Token
-   * @param {Object} req - Express请求对象
-   * @param {Object} res - Express响应对象
+   * Verify token
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
    */
   verifyToken(req, res) {
     const userInfo = {

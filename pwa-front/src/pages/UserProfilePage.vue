@@ -170,7 +170,7 @@ const settingsLoading = ref(false)
 function formatDate(dateString) {
   if (!dateString) return 'Unknown'
   const date = new Date(dateString)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'

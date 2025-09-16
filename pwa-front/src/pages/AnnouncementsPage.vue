@@ -1,12 +1,12 @@
 <template>
   <q-page class="q-pa-md">
     <div class="row items-center q-gutter-sm q-mb-md">
-      <div class="text-h6">公告</div>
+      <div class="text-h6">Announcements</div>
       <q-space />
-      <q-btn flat icon="refresh" label="刷新" :loading="loading" @click="onRefresh" />
+      <q-btn flat icon="refresh" label="Refresh" :loading="loading" @click="onRefresh" />
     </div>
 
-    <div class="text-caption text-grey-7 q-mb-md">最後同步：<span>{{ lastSyncedText }}</span></div>
+    <div class="text-caption text-grey-7 q-mb-md">Last synced: <span>{{ lastSyncedText }}</span></div>
 
     <q-list separator>
       <q-item v-for="a in items" :key="a.id" clickable>
@@ -33,7 +33,7 @@
           <q-icon v-else name="check_circle" color="positive" />
         </q-item-section>
       </q-item>
-      <div v-if="!loading && items.length === 0" class="text-body2 text-grey-7 q-pa-md">尚無公告</div>
+      <div v-if="!loading && items.length === 0" class="text-body2 text-grey-7 q-pa-md">No announcements</div>
     </q-list>
   </q-page>
 </template>
@@ -48,7 +48,7 @@ const store = useAnnouncementsStore()
 
 const loading = computed(() => store.loading)
 const items = computed(() => store.items)
-const lastSyncedText = computed(() => (store.lastSyncedAt ? new Date(store.lastSyncedAt).toLocaleString() : '尚未同步'))
+const lastSyncedText = computed(() => (store.lastSyncedAt ? new Date(store.lastSyncedAt).toLocaleString() : 'Not synced yet'))
 
 onMounted(async () => {
   await store.loadFromDb()
@@ -56,12 +56,12 @@ onMounted(async () => {
 
 async function onRefresh() {
   const res = await store.sync({ force: true })
-  $q.notify({ type: res.ok ? 'positive' : 'negative', message: res.ok ? '公告已同步' : res.error })
+  $q.notify({ type: res.ok ? 'positive' : 'negative', message: res.ok ? 'Announcements synced' : res.error })
 }
 
 async function onMarkRead(id) {
   const res = await store.markRead(id)
-  $q.notify({ type: res.ok ? 'positive' : 'negative', message: res.ok ? '已標記已讀' : res.error })
+  $q.notify({ type: res.ok ? 'positive' : 'negative', message: res.ok ? 'Marked as read' : res.error })
 }
 
 function formatDate(iso) {

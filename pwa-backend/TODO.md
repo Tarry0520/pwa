@@ -1,29 +1,29 @@
-# 後端待辦事項（按里程碑）
+# Backend TODO Items (by Milestone)
 
-## M1 transcripts + schedule（批次與差異同步）
-- [x] 新增路由：`GET /me/transcripts?terms=`、`GET /schedule?term=`
- - [x] 控制器：批次查詢與回傳 `updatedAt`
- - [x] 支援 `?since=`（ISO timestamp）過濾增量
+## M1 transcripts + schedule (batch and diff sync)
+- [x] Add routes: `GET /me/transcripts?terms=`, `GET /schedule?term=`
+ - [x] Controllers: batch query and return `updatedAt`
+ - [x] Support `?since=` (ISO timestamp) for incremental filtering
  
 
-## M2 announcements + events（附件簽名 URL）
-- [x] 新增路由：`GET /announcements?since=`、`POST /announcements/:id/read`、`GET /events?range=`
-- [x] 服務：產生公告附件簽名 URL（S3 或等效實作；POC 可回傳假資料結構）
-- [x] 已讀回報寫入（可去重邏輯，使用者層級）
+## M2 announcements + events (attachment signed URLs)
+- [x] Add routes: `GET /announcements?since=`, `POST /announcements/:id/read`, `GET /events?range=`
+- [x] Service: generate announcement attachment signed URLs (S3 or equivalent implementation; POC can return mock data structure)
+- [x] Read status reporting (deduplication logic, user level)
 
-## M3 attendance + leave-requests（冪等）
-- [ ] 新增路由：`GET /attendance?term=`、`GET /leave-requests?mine`、`POST /leave-requests`、`POST /leave-requests/:id/decision`
-- [ ] `POST /leave-requests` 支援 `Idempotency-Key`（記錄表或 Redis）
-- [ ] 角色檢核：導師才可審核；學生限看本人資料
+## M3 attendance + leave-requests (idempotency)
+- [x] Add routes: `GET /attendance?term=`, `GET /leave-requests?mine`, `POST /leave-requests`, `POST /leave-requests/:id/decision`
+- [x] `POST /leave-requests` supports `Idempotency-Key` (Redis cache replay)
+- [x] Role validation: only teachers can approve; students limited to own data (POC: Header override `x-user-role`)
  
 
-## M4 健全與效能
-- [ ] 中介層：ETag 生成與 `If-None-Match` 處理（304）
-- [ ] 統一 API 分頁/上限（公告/事件）與合理索引
-- [ ] 快取標頭/Cache-Control 與過期策略（靜態與可快取資料）
-- [ ] 文檔：端點說明、查詢參數、範例回應、錯誤碼
+## M4 robustness and performance
+- [ ] Middleware: ETag generation and `If-None-Match` handling (304)
+- [ ] Unified API pagination/limits (announcements/events) and reasonable indexing
+- [ ] Cache headers/Cache-Control and expiration strategy (static and cacheable data)
+- [ ] Documentation: endpoint descriptions, query parameters, example responses, error codes
 
-## 配置與安全
-- [ ] 建立 `pwa-backend/.env`（由 `env.template` 複製）並配置必要變數
-- [ ] 本地開發腳本確認：`npm run devstart` / `npm start`
-- [ ] SAM 打包/部署腳本確認：`npm run package && npm run deploy`
+## Configuration and security
+- [ ] Create `pwa-backend/.env` (copy from `env.template`) and configure required variables
+- [ ] Local development script confirmation: `npm run devstart` / `npm start`
+- [ ] SAM packaging/deployment script confirmation: `npm run package && npm run deploy`

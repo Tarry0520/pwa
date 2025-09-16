@@ -4,12 +4,12 @@ const humps = require('humps');
 
 
 /**
- * 请求数据转换中间件
- * 将前端发送的驼峰命名转换为下划线命名（用于数据库操作）
- * @param {Object} options - 配置选项
- * @param {Array} options.sources - 要转换的数据源 ['body', 'query', 'params']
- * @param {Array} options.exclude - 排除的字段名
- * @returns {Function} Express中间件函数
+ * Request data transform middleware
+ * Convert frontend camelCase payloads to snake_case (for DB operations)
+ * @param {Object} options - config options
+ * @param {Array} options.sources - sources to transform ['body', 'query', 'params']
+ * @param {Array} options.exclude - field names to exclude
+ * @returns {Function} Express middleware
  */
 function requestTransform(options = {}) {
   const { 
@@ -24,7 +24,7 @@ function requestTransform(options = {}) {
           req[source] = humps.decamelizeKeys(req[source], {
             separator: '_',
             process: (key, convert, options) => {
-              // 排除不需要转换的字段
+              // Skip excluded fields
               if (exclude.includes(key)) {
                 return key;
               }
@@ -36,19 +36,19 @@ function requestTransform(options = {}) {
       
       next();
     } catch (error) {
-      console.error('请求数据转换错误:', error);
-      return errorResponse(res, 400, '请求数据格式错误');
+      console.error('Request transform error:', error);
+      return errorResponse(res, 400, 'Invalid request data format');
     }
   };
 }
 
 /**
- * 响应数据转换中间件
- * 将数据库返回的下划线命名转换为驼峰命名（用于前端显示）
- * @param {Object} options - 配置选项
- * @param {Array} options.exclude - 排除的字段名
- * @param {boolean} options.deep - 是否深度转换嵌套对象
- * @returns {Function} Express中间件函数
+ * Response data transform middleware
+ * Convert DB snake_case fields to camelCase (for frontend display)
+ * @param {Object} options - config options
+ * @param {Array} options.exclude - field names to exclude
+ * @param {boolean} options.deep - whether to deep transform nested objects
+ * @returns {Function} Express middleware
  */
 function responseTransform(options = {}) {
   const { 
@@ -62,10 +62,10 @@ function responseTransform(options = {}) {
     res.json = function(data) {
       try {
         if (data && typeof data === 'object') {
-          // 转换响应数据
+          // Transform response data
           const transformedData = humps.camelizeKeys(data, {
             process: (key, convert, options) => {
-              // 排除不需要转换的字段
+              // Skip excluded fields
               if (exclude.includes(key)) {
                 return key;
               }
@@ -78,7 +78,7 @@ function responseTransform(options = {}) {
         
         return originalJson.call(this, data);
       } catch (error) {
-        console.error('响应数据转换错误:', error);
+        console.error('Response transform error:', error);
         return originalJson.call(this, data);
       }
     };

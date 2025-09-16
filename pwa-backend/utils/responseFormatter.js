@@ -1,12 +1,12 @@
 /**
- * API响应格式化工具
- * 用于统一处理API响应格式，避免直接暴露数据库字段
+ * API response formatting utilities
+ * Unify API response shape and avoid leaking raw DB fields
  */
 
 /**
- * 格式化用户信息，只返回前端需要的字段
- * @param {Object} user - 数据库用户对象
- * @returns {Object} 格式化后的用户信息
+ * Format user object for frontend
+ * @param {Object} user - DB user row
+ * @returns {Object} formatted user
  */
 function formatUser(user) {
   if (!user) return null;
@@ -25,9 +25,9 @@ function formatUser(user) {
 }
 
 /**
- * 格式化登录响应
- * @param {Object} loginResult - 登录结果对象
- * @returns {Object} 格式化后的登录响应
+ * Format login response
+ * @param {Object} loginResult - result from login service
+ * @returns {Object} formatted login response
  */
 function formatLoginResponse(loginResult) {
   return {
@@ -38,9 +38,9 @@ function formatLoginResponse(loginResult) {
 }
 
 /**
- * 格式化用户列表
- * @param {Array} users - 用户数组
- * @returns {Array} 格式化后的用户数组
+ * Format user list
+ * @param {Array} users - array of DB users
+ * @returns {Array} formatted users
  */
 function formatUserList(users) {
   if (!Array.isArray(users)) return [];
@@ -48,12 +48,12 @@ function formatUserList(users) {
 }
 
 /**
- * 成功响应格式
- * @param {Object} res - Express响应对象
- * @param {number} statusCode - HTTP状态码
- * @param {string} message - 响应消息
- * @param {*} data - 响应数据
- * @returns {Object} 格式化的响应
+ * Success response helper
+ * @param {Object} res - Express response
+ * @param {number} statusCode - HTTP status
+ * @param {string} message - message
+ * @param {*} data - payload
+ * @returns {Object} response
  */
 function successResponse(res, statusCode = 200, message = 'Operation successful', data = null) {
   const response = {
@@ -70,12 +70,12 @@ function successResponse(res, statusCode = 200, message = 'Operation successful'
 }
 
 /**
- * 错误响应格式
- * @param {Object} res - Express响应对象
- * @param {number} statusCode - HTTP状态码
- * @param {string} message - 错误消息
- * @param {*} details - 错误详情（可选，仅开发环境）
- * @returns {Object} 格式化的错误响应
+ * Error response helper
+ * @param {Object} res - Express response
+ * @param {number} statusCode - HTTP status
+ * @param {string} message - error message
+ * @param {*} details - error details (optional, dev only)
+ * @returns {Object} response
  */
 function errorResponse(res, statusCode = 500, message = 'Internal server error', details = null) {
   const response = {
@@ -83,7 +83,7 @@ function errorResponse(res, statusCode = 500, message = 'Internal server error',
     message
   };
   
-  // 仅在开发环境返回错误详情
+  // Only return error details in development
   if (details && process.env.NODE_ENV === 'development') {
     response.details = details;
   }
@@ -92,10 +92,10 @@ function errorResponse(res, statusCode = 500, message = 'Internal server error',
 }
 
 /**
- * 验证错误响应格式
- * @param {Object} res - Express响应对象
- * @param {Array|string} errors - 验证错误信息
- * @returns {Object} 格式化的验证错误响应
+ * Validation error response helper
+ * @param {Object} res - Express response
+ * @param {Array|string} errors - validation error(s)
+ * @returns {Object} response
  */
 function validationErrorResponse(res, errors) {
   const response = {
@@ -108,14 +108,14 @@ function validationErrorResponse(res, errors) {
 }
 
 /**
- * 分页响应格式
- * @param {Object} res - Express响应对象
- * @param {Array} items - 数据项
- * @param {number} page - 当前页码
- * @param {number} limit - 每页数量
- * @param {number} total - 总数量
- * @param {string} message - 响应消息
- * @returns {Object} 格式化的分页响应
+ * Paginated response helper
+ * @param {Object} res - Express response
+ * @param {Array} items - items
+ * @param {number} page - current page
+ * @param {number} limit - page size
+ * @param {number} total - total items
+ * @param {string} message - message
+ * @returns {Object} response
  */
 function paginatedResponse(res, items, page, limit, total, message = 'Data retrieved successfully') {
   const totalPages = Math.ceil(total / limit);

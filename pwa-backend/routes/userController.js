@@ -1,6 +1,6 @@
 /**
- * 用户路由 - 使用Controller层
- * 自动处理字段转换：前端字段 <-> 数据库字段
+ * User routes - via Controller layer
+ * Automatically handles field transformation: frontend <-> database
  */
 
 const express = require('express');
@@ -9,75 +9,72 @@ const userService = require('../services/userService');
 const { authenticateToken } = require('../middleware/auth');
 const UserController = require('../controllers/UserController');
 
-// 创建Controller实例
+// Create controller instance
 const userController = new UserController(userService);
 
 /**
- * 用户注册
+ * User registration
  * POST /users/register
- * 前端发送: { email, password }
- * 后端接收: { email, password } (字段名不变)
- * 后端返回: { studentId, email, displayName, ... } (数据库字段转驼峰)
+ * Frontend: { email, password }
+ * Backend receives: { email, password }
+ * Backend returns: { studentId, email, displayName, ... }
  */
 router.post('/register', (req, res) => {
   userController.register(req, res);
 });
 
 /**
- * 用户登录
+ * User login
  * POST /users/login
- * 前端发送: { identifier, password }
- * 后端接收: { identifier, password } (字段名不变)
- * 后端返回: { user: { studentId, displayName, ... }, token, expiresIn }
+ * Frontend: { identifier, password }
+ * Backend receives: { identifier, password }
+ * Backend returns: { user: {...}, token, expiresIn }
  */
 router.post('/login', (req, res) => {
   userController.login(req, res);
 });
 
 /**
- * 用户登出
+ * User logout
  * POST /users/logout
- * 后端返回: { success: true, message: "登出成功" }
+ * Returns: { success: true, message }
  */
 router.post('/logout', authenticateToken, (req, res) => {
   userController.logout(req, res);
 });
 
 /**
- * 获取用户信息
+ * Get user info
  * GET /users/profile
- * 后端返回: { studentId, displayName, avatarUrl, ... } (数据库字段转驼峰)
+ * Returns: { studentId, displayName, avatarUrl, ... }
  */
 router.get('/profile', authenticateToken, (req, res) => {
   userController.getProfile(req, res);
 });
 
 /**
- * 更新用户信息
+ * Update user info
  * PUT /users/profile
- * 前端发送: { displayName, email, phone }
- * 后端接收: { display_name, email, phone } (驼峰转下划线)
- * 后端返回: { studentId, displayName, phone, ... } (数据库字段转驼峰)
+ * Frontend: { displayName, email, phone }
+ * Returns: { studentId, displayName, phone, ... }
  */
 router.put('/profile', authenticateToken, (req, res) => {
   userController.updateProfile(req, res);
 });
 
 /**
- * 修改密码
+ * Change password
  * PUT /users/password
- * 前端发送: { oldPassword, newPassword }
- * 后端接收: { oldPassword, newPassword } (字段名不变)
- * 后端返回: { success: true, message: "密码修改成功" }
+ * Frontend: { oldPassword, newPassword }
  */
 router.put('/password', authenticateToken, (req, res) => {
   userController.changePassword(req, res);
 });
 
 /**
- * 验证Token
+ * Verify token
  * GET /users/verify-token
- * 后端返回: { user: { id, studentId, email } }
+ * Returns: { user: { id, studentId, email } }
  */
 router.get('/verify-token', authenticateToken, (req, res) => {
   userController.verifyToken(req, res);

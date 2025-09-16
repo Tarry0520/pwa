@@ -2,39 +2,39 @@ const serverlessExpress = require('@vendia/serverless-express');
 const app = require('./app');
 const { initDatabase } = require('./config/database');
 
-// 初始化標記
+// Initialization flag
 let isInitialized = false;
 
-// 在 Lambda 環境中禁用某些不必要的功能
+// Disable non-essential features in Lambda environment
 if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  // 禁用 view engine
+  // Disable view engine
   app.set('view engine', null);
   app.set('views', null);
   
-  // 移除靜態文件服務
+  // Remove static file serving
   app._router.stack = app._router.stack.filter(layer => {
     return layer.name !== 'serveStatic';
   });
 }
 
-// 包裝 handler 以確保初始化
+// Wrap handler to ensure initialization
 const handler = serverlessExpress({ app });
 
 exports.handler = async (event, context) => {
-  // 確保只初始化一次
+  // Ensure we initialize only once
   if (!isInitialized) {
-    console.log('正在初始化 Lambda 環境...');
+    console.log('Initializing Lambda environment...');
     try {
       await initDatabase();
-      console.log('數據庫初始化成功');
+      console.log('Database initialization successful');
       isInitialized = true;
     } catch (error) {
-      console.error('數據庫初始化失敗:', error);
-      // 即使初始化失敗也設置標記，避免重複嘗試
+      console.error('Database initialization failed:', error);
+      // Set flag even on failure to avoid repeated attempts
       isInitialized = true;
     }
   }
   
-  // 調用原始 handler
+  // Invoke original handler
   return handler(event, context);
 };

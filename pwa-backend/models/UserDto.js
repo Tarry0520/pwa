@@ -2,8 +2,8 @@ const { Transform, Type } = require('class-transformer');
 const { IsEmail, IsString, IsOptional, MinLength, IsNumber } = require('class-validator');
 
 /**
- * 用户数据传输对象 (DTO)
- * 用于API请求和响应的字段转换
+ * User Data Transfer Objects (DTOs)
+ * Used for API request/response field validation and transformation
  */
 class UserDto {
   @IsNumber()
@@ -48,7 +48,7 @@ class UserDto {
 }
 
 /**
- * 用户注册请求DTO
+ * User registration request DTO
  */
 class UserRegisterDto {
   @IsEmail()
@@ -61,7 +61,7 @@ class UserRegisterDto {
 }
 
 /**
- * 用户登录请求DTO
+ * User login request DTO
  */
 class UserLoginDto {
   @IsString()
@@ -72,7 +72,7 @@ class UserLoginDto {
 }
 
 /**
- * 用户信息更新请求DTO
+ * User profile update request DTO
  */
 class UserUpdateDto {
   @IsOptional()
@@ -89,7 +89,7 @@ class UserUpdateDto {
 }
 
 /**
- * 密码修改请求DTO
+ * Password change request DTO
  */
 class PasswordChangeDto {
   @IsString()
@@ -101,7 +101,7 @@ class PasswordChangeDto {
 }
 
 /**
- * 登录响应DTO
+ * Login response DTO
  */
 class LoginResponseDto {
   @Type(() => UserDto)

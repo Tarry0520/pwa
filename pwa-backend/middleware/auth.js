@@ -2,13 +2,13 @@ const jwt = require('jsonwebtoken');
 const { get, exists } = require('../config/redis');
 require('dotenv').config();
 
-// JWT密钥
+// JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
 
 /**
- * 生成JWT Token
- * @param {Object} payload - 用户信息
- * @param {string} expiresIn - 过期时间
+ * Generate JWT token
+ * @param {Object} payload - user payload
+ * @param {string} expiresIn - expiry time
  * @returns {string} JWT Token
  */
 function generateToken(payload, expiresIn = '24h') {
@@ -16,9 +16,9 @@ function generateToken(payload, expiresIn = '24h') {
 }
 
 /**
- * 验证JWT Token
+ * Verify JWT token
  * @param {string} token - JWT Token
- * @returns {Object|null} 解码后的用户信息
+ * @returns {Object|null} decoded payload
  */
 function verifyToken(token) {
   try {
@@ -29,59 +29,59 @@ function verifyToken(token) {
 }
 
 /**
- * JWT认证中间件
- * @param {Object} req - 请求对象
- * @param {Object} res - 响应对象
- * @param {Function} next - 下一个中间件
+ * JWT authentication middleware
+ * @param {Object} req - request object
+ * @param {Object} res - response object
+ * @param {Function} next - next middleware
  */
 async function authenticateToken(req, res, next) {
   try {
-    // 从请求头获取token
+    // Read token from Authorization header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: '访问令牌缺失'
+        message: 'Access token is missing'
       });
     }
 
-    // 验证token
+    // Verify token
     const decoded = verifyToken(token);
     if (!decoded) {
       return res.status(403).json({
         success: false,
-        message: '无效的访问令牌'
+        message: 'Invalid access token'
       });
     }
 
-    // 检查token是否在Redis黑名单中（用于登出功能）
+    // Check if token is in Redis blacklist (for logout)
     const isBlacklisted = await exists(`blacklist:${token}`);
     if (isBlacklisted) {
       return res.status(403).json({
         success: false,
-        message: '令牌已失效'
+        message: 'Token has been revoked'
       });
     }
 
-    // 将用户信息添加到请求对象
+    // Attach user info to request
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('认证中间件错误:', error);
+    console.error('Authentication middleware error:', error);
     return res.status(500).json({
       success: false,
-      message: '服务器内部错误'
+      message: 'Internal server error'
     });
   }
 }
 
 /**
- * 可选的JWT认证中间件（不强制要求token）
- * @param {Object} req - 请求对象
- * @param {Object} res - 响应对象
- * @param {Function} next - 下一个中间件
+ * Optional JWT auth middleware (token not required)
+ * @param {Object} req - request object
+ * @param {Object} res - response object
+ * @param {Function} next - next middleware
  */
 async function optionalAuth(req, res, next) {
   try {
@@ -100,7 +100,7 @@ async function optionalAuth(req, res, next) {
     
     next();
   } catch (error) {
-    console.error('可选认证中间件错误:', error);
+    console.error('Optional auth middleware error:', error);
     next();
   }
 }

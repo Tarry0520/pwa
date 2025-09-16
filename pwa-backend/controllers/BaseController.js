@@ -1,6 +1,6 @@
 /**
- * Controller基类
- * 提供通用的字段转换和响应处理功能
+ * Base controller
+ * Provides common field transformation and response helpers
  */
 
 const FieldTransformer = require('../utils/fieldTransformer');
@@ -8,38 +8,38 @@ const { successResponse, errorResponse, validationErrorResponse } = require('../
 
 class BaseController {
   /**
-   * 构造函数
-   * @param {Object} service - 服务层实例
+   * Constructor
+   * @param {Object} service - service layer instance
    */
   constructor(service) {
     this.service = service;
   }
 
   /**
-   * 处理请求数据转换（前端字段 -> 数据库字段）
-   * @param {Object} req - Express请求对象
-   * @returns {Object} 转换后的请求数据
+   * Transform request payload (frontend -> DB fields)
+   * @param {Object} req - Express request
+   * @returns {Object} transformed request
    */
   transformRequest(req) {
     return FieldTransformer.transformRequest(req);
   }
 
   /**
-   * 处理响应数据转换（数据库字段 -> 前端字段）
-   * @param {Object} data - 响应数据
-   * @returns {Object} 转换后的响应数据
+   * Transform response data (DB -> frontend fields)
+   * @param {Object} data - response data
+   * @returns {Object} transformed data
    */
   transformResponse(data) {
     return FieldTransformer.transformResponse(data);
   }
 
   /**
-   * 发送成功响应
-   * @param {Object} res - Express响应对象
-   * @param {number} statusCode - HTTP状态码
-   * @param {string} message - 响应消息
-   * @param {*} data - 响应数据
-   * @returns {Object} 响应对象
+   * Send success response
+   * @param {Object} res - Express response
+   * @param {number} statusCode - HTTP status
+   * @param {string} message - message
+   * @param {*} data - payload
+   * @returns {Object} response
    */
   sendSuccess(res, statusCode = 200, message = 'Operation successful', data = null) {
     const responseData = { success: true, message, timestamp: new Date().toISOString() };
@@ -52,12 +52,12 @@ class BaseController {
   }
 
   /**
-   * 发送错误响应
-   * @param {Object} res - Express响应对象
-   * @param {number} statusCode - HTTP状态码
-   * @param {string} message - 错误消息
-   * @param {*} details - 错误详情
-   * @returns {Object} 响应对象
+   * Send error response
+   * @param {Object} res - Express response
+   * @param {number} statusCode - HTTP status
+   * @param {string} message - error message
+   * @param {*} details - error details
+   * @returns {Object} response
    */
   sendError(res, statusCode = 500, message = 'Internal server error', details = null) {
     const responseData = {
@@ -73,10 +73,10 @@ class BaseController {
   }
 
   /**
-   * 发送验证错误响应
-   * @param {Object} res - Express响应对象
-   * @param {Array|string} errors - 验证错误信息
-   * @returns {Object} 响应对象
+   * Send validation error response
+   * @param {Object} res - Express response
+   * @param {Array|string} errors - validation errors
+   * @returns {Object} response
    */
   sendValidationError(res, errors) {
     const responseData = {
@@ -89,10 +89,10 @@ class BaseController {
   }
 
   /**
-   * 验证必填字段
-   * @param {Object} data - 要验证的数据
-   * @param {Array} requiredFields - 必填字段数组
-   * @returns {Array} 验证错误数组
+   * Validate required fields
+   * @param {Object} data - data to validate
+   * @param {Array} requiredFields - required field names
+   * @returns {Array} validation errors
    */
   validateRequired(data, requiredFields) {
     const errors = [];
@@ -107,9 +107,9 @@ class BaseController {
   }
 
   /**
-   * 验证邮箱格式
-   * @param {string} email - 邮箱地址
-   * @returns {boolean} 是否有效
+   * Validate email format
+   * @param {string} email - email
+   * @returns {boolean} valid
    */
   validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,27 +117,27 @@ class BaseController {
   }
 
   /**
-   * 验证密码长度
-   * @param {string} password - 密码
-   * @param {number} minLength - 最小长度
-   * @returns {boolean} 是否有效
+   * Validate password length
+   * @param {string} password - password
+   * @param {number} minLength - min length
+   * @returns {boolean} valid
    */
   validatePassword(password, minLength = 6) {
     return password && password.length >= minLength;
   }
 
   /**
-   * 处理异步操作
-   * @param {Function} asyncFn - 异步函数
-   * @param {Object} res - Express响应对象
-   * @param {string} errorMessage - 错误消息
+   * Handle async operation
+   * @param {Function} asyncFn - async function
+   * @param {Object} res - Express response
+   * @param {string} errorMessage - error message
    */
   async handleAsync(asyncFn, res, errorMessage = 'Operation failed') {
     try {
       const result = await asyncFn();
       return result;
     } catch (error) {
-      console.error('Controller错误:', error);
+      console.error('Controller error:', error);
       return this.sendError(res, 500, errorMessage, error.message);
     }
   }

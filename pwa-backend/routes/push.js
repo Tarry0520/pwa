@@ -9,21 +9,21 @@ const {
 } = require('../utils/responseFormatter');
 
 /**
- * 获取VAPID公钥
+ * Get VAPID public key
  * GET /push/vapid-key
  */
 router.get('/vapid-key', (req, res) => {
   try {
     const publicKey = pushService.getPublicKey();
-    return successResponse(res, 200, '获取VAPID公钥成功', { publicKey });
+    return successResponse(res, 200, 'VAPID public key retrieved', { publicKey });
   } catch (error) {
-    console.error('获取VAPID公钥错误:', error);
-    return errorResponse(res, 500, '获取VAPID公钥失败');
+    console.error('Failed to get VAPID public key:', error);
+    return errorResponse(res, 500, 'Failed to get VAPID public key');
   }
 });
 
 /**
- * 保存推送订阅
+ * Save push subscription
  * POST /push/subscribe
  */
 router.post('/subscribe', async (req, res) => {
@@ -37,13 +37,13 @@ router.post('/subscribe', async (req, res) => {
     // Validate subscription format
     if (!subscription || !subscription.endpoint || !subscription.keys ||
         !subscription.keys.p256dh || !subscription.keys.auth) {
-      return validationErrorResponse(res, '订阅信息格式不正确');
+      return validationErrorResponse(res, 'Invalid subscription payload');
     }
 
     // Add user agent information
     subscription.userAgent = req.headers['user-agent'];
 
-    console.log('收到推送订阅请求:', {
+    console.log('Received push subscription:', {
       userId,
       endpoint: subscription.endpoint,
       userAgent: subscription.userAgent,
@@ -54,18 +54,18 @@ router.post('/subscribe', async (req, res) => {
     const success = await pushService.saveSubscription(subscription, userId);
     
     if (success) {
-      return successResponse(res, 200, '订阅保存成功');
+      return successResponse(res, 200, 'Subscription saved successfully');
     } else {
-      return errorResponse(res, 500, '订阅保存失败');
+      return errorResponse(res, 500, 'Failed to save subscription');
     }
   } catch (error) {
-    console.error('保存推送订阅错误:', error);
-    return errorResponse(res, 500, '保存推送订阅失败');
+    console.error('Error saving push subscription:', error);
+    return errorResponse(res, 500, 'Error saving push subscription');
   }
 });
 
 /**
- * 删除推送订阅
+ * Delete push subscription
  * DELETE /push/unsubscribe
  */
 router.delete('/unsubscribe', authenticateToken, async (req, res) => {
@@ -73,27 +73,27 @@ router.delete('/unsubscribe', authenticateToken, async (req, res) => {
     const { endpoint } = req.body;
     const userId = req.user.id;
 
-    // 验证必填字段
+    // Validate required field
     if (!endpoint) {
-      return validationErrorResponse(res, '订阅端点是必填项');
+      return validationErrorResponse(res, 'Subscription endpoint is required');
     }
 
-    // 删除订阅
+    // Remove subscription
     const success = pushService.removeSubscription(endpoint);
     
     if (success) {
-      return successResponse(res, 200, '取消订阅成功');
+      return successResponse(res, 200, 'Unsubscribed successfully');
     } else {
-      return errorResponse(res, 404, '订阅不存在');
+      return errorResponse(res, 404, 'Subscription not found');
     }
   } catch (error) {
-    console.error('删除推送订阅错误:', error);
-    return errorResponse(res, 500, '删除推送订阅失败');
+    console.error('Error deleting subscription:', error);
+    return errorResponse(res, 500, 'Failed to delete subscription');
   }
 });
 
 /**
- * 获取当前用户的推送订阅
+ * Get current user's push subscriptions
  * GET /push/subscriptions
  */
 router.get('/subscriptions', authenticateToken, async (req, res) => {
@@ -101,7 +101,7 @@ router.get('/subscriptions', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const subscriptions = pushService.getSubscriptionsByUserId(userId);
     
-    return successResponse(res, 200, '获取订阅列表成功', { 
+    return successResponse(res, 200, 'Subscriptions fetched', { 
       subscriptions: subscriptions.map(sub => ({
         endpoint: sub.endpoint,
         createdAt: sub.createdAt,
@@ -109,25 +109,25 @@ router.get('/subscriptions', authenticateToken, async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('获取推送订阅错误:', error);
-    return errorResponse(res, 500, '获取推送订阅失败');
+    console.error('Failed to get subscriptions:', error);
+    return errorResponse(res, 500, 'Failed to get subscriptions');
   }
 });
 
 /**
- * 发送推送消息给所有用户
+ * Send push to all users
  * POST /push/send-all
  */
 router.post('/send-all', async (req, res) => {
   try {
     const { title, body, icon, badge, data } = req.body;
 
-    // 验证必填字段
+    // Validate
     if (!title || !body) {
-      return validationErrorResponse(res, '标题和内容都是必填项');
+      return validationErrorResponse(res, 'Title and body are required');
     }
 
-    // 构建推送载荷
+    // Build payload
     const payload = {
       title,
       body,
@@ -137,30 +137,30 @@ router.post('/send-all', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // 发送推送
+    // Send push
     const result = await pushService.sendToAll(payload);
     
     return successResponse(res, 200, result.message, result);
   } catch (error) {
-    console.error('发送推送消息错误:', error);
-    return errorResponse(res, 500, '发送推送消息失败');
+    console.error('Error sending push to all:', error);
+    return errorResponse(res, 500, 'Failed to send push to all');
   }
 });
 
 /**
- * 发送推送消息给指定用户
+ * Send push to a specific user
  * POST /push/send-user
  */
 router.post('/send-user', authenticateToken, async (req, res) => {
   try {
     const { userId, title, body, icon, badge, data } = req.body;
 
-    // 验证必填字段
+    // Validate
     if (!userId || !title || !body) {
-      return validationErrorResponse(res, '用户ID、标题和内容都是必填项');
+      return validationErrorResponse(res, 'userId, title and body are required');
     }
 
-    // 构建推送载荷
+    // Build payload
     const payload = {
       title,
       body,
@@ -170,30 +170,30 @@ router.post('/send-user', authenticateToken, async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // 发送推送
+    // Send push
     const result = await pushService.sendToUser(userId, payload);
     
     return successResponse(res, 200, result.message, result);
   } catch (error) {
-    console.error('发送用户推送消息错误:', error);
-    return errorResponse(res, 500, '发送用户推送消息失败');
+    console.error('Error sending push to user:', error);
+    return errorResponse(res, 500, 'Failed to send push to user');
   }
 });
 
 /**
- * 发送推送消息给指定订阅
+ * Send push to a specific subscription
  * POST /push/send-subscription
  */
 router.post('/send-subscription', authenticateToken, async (req, res) => {
   try {
     const { endpoint, title, body, icon, badge, data } = req.body;
 
-    // 验证必填字段
+    // Validate
     if (!endpoint || !title || !body) {
-      return validationErrorResponse(res, '订阅端点、标题和内容都是必填项');
+      return validationErrorResponse(res, 'endpoint, title and body are required');
     }
 
-    // 构建推送载荷
+    // Build payload
     const payload = {
       title,
       body,
@@ -203,7 +203,7 @@ router.post('/send-subscription', authenticateToken, async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // 发送推送
+    // Send push
     const result = await pushService.sendToSubscription(endpoint, payload);
     
     if (result.success) {
@@ -212,13 +212,13 @@ router.post('/send-subscription', authenticateToken, async (req, res) => {
       return errorResponse(res, 400, result.message, result);
     }
   } catch (error) {
-    console.error('发送订阅推送消息错误:', error);
-    return errorResponse(res, 500, '发送订阅推送消息失败');
+    console.error('Error sending push to subscription:', error);
+    return errorResponse(res, 500, 'Failed to send push to subscription');
   }
 });
 
 /**
- * 获取推送统计信息
+ * Get push statistics
  * GET /push/stats
  */
 router.get('/stats', authenticateToken, async (req, res) => {
@@ -230,17 +230,17 @@ router.get('/stats', authenticateToken, async (req, res) => {
       totalSubscriptions: allSubscriptions.length,
       userSubscriptions: userSubscriptions.length,
       activeSubscriptions: allSubscriptions.filter(sub => {
-        // 简单的活跃度检查：最近7天内有更新
+        // Simple activity check: updated within the last 7 days
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return new Date(sub.updatedAt) > weekAgo;
       }).length
     };
     
-    return successResponse(res, 200, '获取推送统计成功', stats);
+    return successResponse(res, 200, 'Push stats fetched', stats);
   } catch (error) {
-    console.error('获取推送统计错误:', error);
-    return errorResponse(res, 500, '获取推送统计失败');
+    console.error('Failed to get push stats:', error);
+    return errorResponse(res, 500, 'Failed to get push stats');
   }
 });
 

@@ -1,15 +1,14 @@
 #!/bin/bash
 
-echo "開始構建和部署..."
+echo "Starting build and deployment..."
 sam build && sam deploy --no-confirm-changeset
 
 if [ $? -eq 0 ]; then
-    echo "部署成功！"
+    echo "Deployment successful!"
 else
-    echo "部署失敗！"
+    echo "Deployment failed!"
     exit 1
 fi
-
 
 
 

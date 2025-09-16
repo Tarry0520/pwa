@@ -30,7 +30,7 @@ export const useTranscriptsStore = defineStore('transcripts', {
         this.itemsByTerm = map
         this.lastSyncedAt = lastSyncedAt
       } catch (e) {
-        this.error = e?.message || '載入離線資料失敗'
+        this.error = e?.message || 'Failed to load offline data'
       } finally {
         this.loading = false
       }
@@ -66,7 +66,7 @@ export const useTranscriptsStore = defineStore('transcripts', {
         await setMeta('transcripts:lastSyncedAt', this.lastSyncedAt)
         return { ok: true }
       } catch (e) {
-        this.error = e?.message || '同步失敗'
+        this.error = e?.message || 'Sync failed'
         return { ok: false, error: this.error }
       } finally {
         this.loading = false

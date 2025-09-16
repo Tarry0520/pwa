@@ -3,7 +3,7 @@ const { pool } = require('../config/database');
 
 class PushService {
   constructor() {
-    // VAPID密钥配置
+    // VAPID key configuration
     this.publicKey = process.env.VAPID_PUBLIC_KEY;
     this.privateKey = process.env.VAPID_PRIVATE_KEY;
     
@@ -12,7 +12,7 @@ class PushService {
       throw new Error('VAPID configuration is missing');
     }
     
-    // 设置VAPID详情
+    // Configure VAPID details
     const contact = process.env.VAPID_CONTACT || 'mailto:your-email@example.com';
     console.log('Initializing VAPID with:', {
       contact,
@@ -26,28 +26,28 @@ class PushService {
       this.privateKey
     );
     
-    // 使用现有的数据库连接池
+    // Reuse shared DB pool
     this.pool = pool;
   }
 
   /**
-   * 获取VAPID公钥
-   * @returns {string} VAPID公钥
+   * Get VAPID public key
+   * @returns {string} public key
    */
   getPublicKey() {
     return this.publicKey;
   }
 
   /**
-   * 保存推送订阅
-   * @param {Object} subscription 推送订阅对象
-   * @param {number} userId 用户ID（可选）
-   * @returns {boolean} 保存是否成功
+   * Save a push subscription
+   * @param {Object} subscription - subscription object
+   * @param {number} userId - optional user ID
+   * @returns {boolean} whether saved successfully
    */
   async saveSubscription(subscription, userId = null) {
     let connection;
     try {
-      console.log('保存推送订阅，详细信息:', {
+      console.log('Saving push subscription:', {
         endpoint: subscription.endpoint,
         userId,
         keys: subscription.keys,
@@ -58,14 +58,14 @@ class PushService {
       connection = await this.pool.getConnection();
       await connection.beginTransaction();
 
-      // 检查是否已存在相同的订阅
+      // Check if subscription already exists
       const [rows] = await connection.query(
         'SELECT id FROM push_subscriptions WHERE endpoint = ?',
         [subscription.endpoint]
       );
 
       if (rows.length > 0) {
-        // 更新现有订阅
+        // Update existing subscription
         await connection.query(
           `UPDATE push_subscriptions 
            SET auth_key = ?, 
@@ -82,13 +82,13 @@ class PushService {
             subscription.endpoint
           ]
         );
-        console.log('更新现有订阅:', {
+        console.log('Updated existing subscription:', {
           endpoint: subscription.endpoint,
           userId,
           updatedAt: new Date().toISOString()
         });
       } else {
-        // 添加新订阅
+        // Insert new subscription
         await connection.query(
           `INSERT INTO push_subscriptions 
            (endpoint, auth_key, p256dh_key, user_id, user_agent)
@@ -101,7 +101,7 @@ class PushService {
             subscription.userAgent
           ]
         );
-        console.log('添加新订阅:', {
+        console.log('Inserted new subscription:', {
           endpoint: subscription.endpoint,
           userId,
           createdAt: new Date().toISOString()
@@ -111,7 +111,7 @@ class PushService {
       const [countRows] = await connection.query(
         'SELECT COUNT(*) as count FROM push_subscriptions'
       );
-      console.log('当前订阅总数:', countRows[0].count);
+      console.log('Total subscriptions:', countRows[0].count);
 
       await connection.commit();
       return true;
@@ -119,7 +119,7 @@ class PushService {
       if (connection) {
         await connection.rollback();
       }
-      console.error('保存推送订阅失败:', error);
+      console.error('Failed to save subscription:', error);
       return false;
     } finally {
       if (connection) {
@@ -129,28 +129,28 @@ class PushService {
   }
 
   /**
-   * 删除推送订阅
-   * @param {string} endpoint 订阅端点
-   * @returns {boolean} 删除是否成功
+   * Remove push subscription
+   * @param {string} endpoint - subscription endpoint
+   * @returns {boolean} whether removed
    */
   removeSubscription(endpoint) {
     try {
       const index = this.subscriptions.findIndex(sub => sub.endpoint === endpoint);
       if (index !== -1) {
         this.subscriptions.splice(index, 1);
-        console.log('推送订阅已删除:', endpoint);
+        console.log('Subscription removed:', endpoint);
         return true;
       }
       return false;
     } catch (error) {
-      console.error('删除推送订阅失败:', error);
+      console.error('Failed to remove subscription:', error);
       return false;
     }
   }
 
   /**
-   * 获取所有订阅
-   * @returns {Array} 订阅列表
+   * Get all subscriptions
+   * @returns {Array} subscriptions
    */
   async getAllSubscriptions() {
     try {
@@ -169,15 +169,15 @@ class PushService {
         userAgent: row.user_agent
       }));
     } catch (error) {
-      console.error('获取订阅列表失败:', error);
+      console.error('Failed to fetch subscriptions:', error);
       return [];
     }
   }
 
   /**
-   * 根据用户ID获取订阅
-   * @param {number} userId 用户ID
-   * @returns {Array} 用户订阅列表
+   * Get subscriptions by user ID
+   * @param {number} userId - user ID
+   * @returns {Array} subscriptions
    */
   async getSubscriptionsByUserId(userId) {
     try {
@@ -198,15 +198,15 @@ class PushService {
         userAgent: row.user_agent
       }));
     } catch (error) {
-      console.error('获取用户订阅列表失败:', error);
+      console.error('Failed to fetch user subscriptions:', error);
       return [];
     }
   }
 
   /**
-   * 发送推送消息给所有订阅者
-   * @param {Object} payload 推送内容
-   * @returns {Promise<Object>} 推送结果
+   * Send a push message to all subscribers
+   * @param {Object} payload - push payload
+   * @returns {Promise<Object>} result summary
    */
   async sendToAll(payload) {
     const results = {
@@ -215,19 +215,19 @@ class PushService {
       errors: []
     };
 
-    // 从数据库获取所有订阅
+    // Fetch all subscriptions from DB
     const subscriptions = await this.getAllSubscriptions();
 
     if (subscriptions.length === 0) {
       return {
         ...results,
-        message: '没有可用的订阅'
+        message: 'No available subscriptions'
       };
     }
 
     const pushPromises = subscriptions.map(async (subscription) => {
       try {
-        console.log('准备发送推送:', {
+        console.log('Sending push:', {
           endpoint: subscription.endpoint,
           payload: JSON.stringify(payload),
           timestamp: new Date().toISOString()
@@ -235,7 +235,7 @@ class PushService {
         
         await webpush.sendNotification(subscription, JSON.stringify(payload));
         results.success++;
-        console.log('推送成功:', {
+        console.log('Push successful:', {
           endpoint: subscription.endpoint,
           timestamp: new Date().toISOString()
         });
@@ -246,9 +246,9 @@ class PushService {
           error: error.message
         });
         
-        // 如果是订阅失效，从数据库中删除该订阅
+        // Remove invalid subscriptions
         if (error.statusCode === 410 || error.statusCode === 404) {
-          console.log('订阅已失效，删除:', subscription.endpoint);
+          console.log('Subscription expired, deleting:', subscription.endpoint);
           let connection;
           try {
             connection = await this.pool.getConnection();
@@ -257,14 +257,14 @@ class PushService {
               [subscription.endpoint]
             );
           } catch (dbError) {
-            console.error('删除失效订阅失败:', dbError);
+            console.error('Failed to delete expired subscription:', dbError);
           } finally {
             if (connection) {
               connection.release();
             }
           }
         } else {
-          console.error('推送失败:', error);
+          console.error('Push failed:', error);
         }
       }
     });
@@ -273,15 +273,15 @@ class PushService {
 
     return {
       ...results,
-      message: `推送完成，成功: ${results.success}，失败: ${results.failed}`
+      message: `Push completed, success: ${results.success}, failed: ${results.failed}`
     };
   }
 
   /**
-   * 发送推送消息给指定用户
-   * @param {number} userId 用户ID
-   * @param {Object} payload 推送内容
-   * @returns {Promise<Object>} 推送结果
+   * Send a push message to a specific user
+   * @param {number} userId - user ID
+   * @param {Object} payload - push payload
+   * @returns {Promise<Object>} result summary
    */
   async sendToUser(userId, payload) {
     const userSubscriptions = await this.getSubscriptionsByUserId(userId);
@@ -290,7 +290,7 @@ class PushService {
       return {
         success: 0,
         failed: 0,
-        message: '用户没有推送订阅'
+        message: 'User has no subscriptions'
       };
     }
 
@@ -304,7 +304,7 @@ class PushService {
       try {
         await webpush.sendNotification(subscription, JSON.stringify(payload));
         results.success++;
-        console.log(`推送给用户${userId}成功: ${subscription.endpoint}`);
+        console.log(`Push to user ${userId} successful: ${subscription.endpoint}`);
       } catch (error) {
         results.failed++;
         results.errors.push({
@@ -312,9 +312,9 @@ class PushService {
           error: error.message
         });
         
-        // 如果是订阅失效，从数据库中删除该订阅
+        // Remove invalid subscriptions
         if (error.statusCode === 410 || error.statusCode === 404) {
-          console.log('订阅已失效，删除:', subscription.endpoint);
+          console.log('Subscription expired, deleting:', subscription.endpoint);
           let connection;
           try {
             connection = await this.pool.getConnection();
@@ -323,14 +323,14 @@ class PushService {
               [subscription.endpoint]
             );
           } catch (dbError) {
-            console.error('删除失效订阅失败:', dbError);
+            console.error('Failed to delete expired subscription:', dbError);
           } finally {
             if (connection) {
               connection.release();
             }
           }
         } else {
-          console.error('推送给用户失败:', error);
+          console.error('Push to user failed:', error);
         }
       }
     });
@@ -339,15 +339,15 @@ class PushService {
 
     return {
       ...results,
-      message: `推送给用户${userId}完成，成功: ${results.success}，失败: ${results.failed}`
+      message: `Push to user ${userId} completed, success: ${results.success}, failed: ${results.failed}`
     };
   }
 
   /**
-   * 发送推送消息给指定订阅
-   * @param {string} endpoint 订阅端点
-   * @param {Object} payload 推送内容
-   * @returns {Promise<Object>} 推送结果
+   * Send a push message to a specific subscription
+   * @param {string} endpoint - subscription endpoint
+   * @param {Object} payload - push payload
+   * @returns {Promise<Object>} result
    */
   async sendToSubscription(endpoint, payload) {
     let connection;
@@ -363,7 +363,7 @@ class PushService {
       if (rows.length === 0) {
         return {
           success: false,
-          message: '订阅不存在'
+          message: 'Subscription not found'
         };
       }
 
@@ -376,24 +376,24 @@ class PushService {
       };
 
       await webpush.sendNotification(subscription, JSON.stringify(payload));
-      console.log(`推送成功: ${endpoint}`);
+      console.log(`Push successful: ${endpoint}`);
       return {
         success: true,
-        message: '推送成功'
+        message: 'Push successful'
       };
     } catch (error) {
-      console.error('推送失败:', error);
+      console.error('Push failed:', error);
       
-      // 如果是订阅失效，从数据库中删除该订阅
+      // Remove invalid subscription if expired
       if (error.statusCode === 410 || error.statusCode === 404) {
-        console.log('订阅已失效，删除:', endpoint);
+        console.log('Subscription expired, deleting:', endpoint);
         try {
           await connection.execute(
             'DELETE FROM push_subscriptions WHERE endpoint = ?',
             [endpoint]
           );
         } catch (dbError) {
-          console.error('删除失效订阅失败:', dbError);
+          console.error('Failed to delete expired subscription:', dbError);
         }
       }
       
@@ -410,7 +410,7 @@ class PushService {
   }
 }
 
-// 创建单例实例
+// Create singleton instance
 const pushService = new PushService();
 
 module.exports = pushService;

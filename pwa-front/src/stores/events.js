@@ -34,7 +34,7 @@ export const useEventsStore = defineStore('events', {
         this.items = records
         this.lastSyncedAt = lastSyncedAt
       } catch (e) {
-        this.error = e?.message || '載入行事曆失敗'
+        this.error = e?.message || 'Failed to load events'
       } finally {
         this.loading = false
       }
@@ -63,7 +63,7 @@ export const useEventsStore = defineStore('events', {
         await setMeta('events:lastSyncedAt', this.lastSyncedAt)
         return { ok: true }
       } catch (e) {
-        this.error = e?.message || '行事曆同步失敗'
+        this.error = e?.message || 'Events sync failed'
         return { ok: false, error: this.error }
       } finally {
         this.loading = false

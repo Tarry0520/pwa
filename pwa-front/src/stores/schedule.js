@@ -21,7 +21,7 @@ export const useScheduleStore = defineStore('schedule', {
         if (record) this.byTerm[record.term] = record
         this.lastSyncedAt = lastSyncedAt
       } catch (e) {
-        this.error = e?.message || '載入課表失敗'
+        this.error = e?.message || 'Failed to load schedule'
       } finally {
         this.loading = false
       }
@@ -29,7 +29,7 @@ export const useScheduleStore = defineStore('schedule', {
 
     async sync({ term, force = false } = {}) {
       if (!term) {
-        this.error = 'term 必填（例如 2024-1）'
+        this.error = 'term is required (e.g. 2025-1)'
         return { ok: false, error: this.error }
       }
       this.loading = true
@@ -68,7 +68,7 @@ export const useScheduleStore = defineStore('schedule', {
         await setMeta(`schedule:lastSyncedAt:${term}`, stamp)
         return { ok: true }
       } catch (e) {
-        this.error = e?.message || '課表同步失敗'
+        this.error = e?.message || 'Schedule sync failed'
         return { ok: false, error: this.error }
       } finally {
         this.loading = false

@@ -50,3 +50,25 @@ export async function markAnnouncementRead(id) {
   const resp = await api.post(`/announcements/${encodeURIComponent(id)}/read`)
   return resp.data || resp
 }
+
+// Attendance
+export async function fetchAttendance({ term } = {}) {
+  const query = qs({ term })
+  const path = `/attendance${query ? `?${query}` : ''}`
+  const resp = await api.get(path)
+  return resp.data || resp
+}
+
+// Leave Requests
+export async function fetchMyLeaveRequests() {
+  const path = `/leave-requests?mine=true`
+  const resp = await api.get(path)
+  return resp.data || resp
+}
+
+export async function createLeaveRequest({ dateRange, reason, attachments, idempotencyKey } = {}) {
+  const headers = {}
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
+  const resp = await api.post(`/leave-requests`, { dateRange, reason, attachments }, { headers })
+  return resp.data || resp
+}

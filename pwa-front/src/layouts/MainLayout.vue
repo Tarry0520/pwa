@@ -37,7 +37,7 @@
             <q-icon name="event" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>課表</q-item-label>
+            <q-item-label>Schedule</q-item-label>
           </q-item-section>
         </q-item>
         <q-item to="/announcements" active-class="q-item-no-link-highlighting">
@@ -45,7 +45,15 @@
             <q-icon name="campaign" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>公告</q-item-label>
+            <q-item-label>Announcements</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item to="/attendance" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="fact_check" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Attendance</q-item-label>
           </q-item-section>
         </q-item>
         <q-item to="/transcript" active-class="q-item-no-link-highlighting">
@@ -53,7 +61,7 @@
             <q-icon name="assignment" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>成績單</q-item-label>
+            <q-item-label>Transcript</q-item-label>
           </q-item-section>
         </q-item>
         <q-item to="/subscription" active-class="q-item-no-link-highlighting">

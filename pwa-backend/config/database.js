@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// 数据库连接配置
+// Database connection configuration
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
@@ -13,28 +13,28 @@ const dbConfig = {
   queueLimit: 0
 };
 
-// 创建连接池
+// Create connection pool
 const pool = mysql.createPool(dbConfig);
 
-// 测试数据库连接
+// Test database connection
 async function testConnection() {
   try {
     const connection = await pool.getConnection();
-    console.log('数据库连接成功');
+    console.log('Database connection successful');
     connection.release();
     return true;
   } catch (error) {
-    console.error('数据库连接失败:', error.message);
+    console.error('Database connection failed:', error.message);
     return false;
   }
 }
 
-// 初始化数据库表
+// Initialize database tables
 async function initDatabase() {
   try {
     const connection = await pool.getConnection();
     
-    // 创建用户表（支持OAuth登录和学号）
+    // Create users table (supports OAuth login and student ID)
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,20 +56,20 @@ async function initDatabase() {
       )
     `);
     
-    // 添加手机号字段（如果表已存在但字段不存在）
+    // Add phone column if missing on existing table
     try {
       await connection.execute(`
         ALTER TABLE users ADD COLUMN phone VARCHAR(20) AFTER display_name
       `);
-      console.log('手机号字段添加成功');
+      console.log('Phone column added successfully');
     } catch (error) {
-      // 字段可能已存在，忽略错误
+      // Column might already exist; ignore the error if so
       if (!error.message.includes('Duplicate column name')) {
-        console.log('手机号字段可能已存在或添加失败:', error.message);
+        console.log('Phone column may already exist or add failed:', error.message);
       }
     }
 
-    // 创建推送订阅表
+    // Create push_subscriptions table
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS push_subscriptions (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -85,10 +85,10 @@ async function initDatabase() {
       )
     `);
     
-    console.log('数据库表初始化成功');
+    console.log('Database tables initialized successfully');
     connection.release();
   } catch (error) {
-    console.error('数据库表初始化失败:', error.message);
+    console.error('Database table initialization failed:', error.message);
   }
 }
 

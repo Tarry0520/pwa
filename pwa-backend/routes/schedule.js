@@ -8,9 +8,9 @@ function sampleSchedule(term) {
     term,
     updatedAt: now,
     entries: [
-      { weekday: 1, period: 1, courseId: `${term}-MATH101`, room: 'A101', teacher: '王老師', updatedAt: now },
-      { weekday: 1, period: 2, courseId: `${term}-CS101`, room: 'Lab-1', teacher: '陳老師', updatedAt: now },
-      { weekday: 2, period: 3, courseId: `${term}-PHYS101`, room: 'B203', teacher: '張老師', updatedAt: now },
+      { weekday: 1, period: 1, courseId: `${term}-MATH101`, room: 'A101', teacher: 'Mr. Wang', updatedAt: now },
+      { weekday: 1, period: 2, courseId: `${term}-CS101`, room: 'Lab-1', teacher: 'Mr. Chen', updatedAt: now },
+      { weekday: 2, period: 3, courseId: `${term}-PHYS101`, room: 'B203', teacher: 'Ms. Chang', updatedAt: now },
     ],
   }
 }
@@ -18,7 +18,7 @@ function sampleSchedule(term) {
 // GET /schedule?term=YYYY-1[&since=iso]
 router.get('/schedule', async (req, res) => {
   const { term, since } = req.query
-  if (!term) return validationErrorResponse(res, 'term 參數必填，例如 2024-1')
+  if (!term) return validationErrorResponse(res, 'term is required, e.g. 2025-1')
   const sinceDate = since ? new Date(since) : null
   const data = sampleSchedule(term)
   if (sinceDate && !isNaN(sinceDate.getTime())) {

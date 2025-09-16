@@ -6,20 +6,20 @@ const userService = require('../services/userService');
 const { formatUser, successResponse, errorResponse } = require('../utils/responseFormatter');
 require('dotenv').config();
 
-// ========== 配置 Azure AD 应用信息 ==========
+// ========== Azure AD App Configuration ==========
 const CLIENT_ID = process.env.MICROSOFT_CLIENT_ID;
 const CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET;
 const REDIRECT_URI = process.env.MICROSOFT_REDIRECT_URI;
 const TENANT_ID = process.env.MICROSOFT_TENANT_ID;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-// 微软登录
+// Microsoft login
 router.get("/microsoft", (req, res) => {
   try {
-    // 生成随机state参数用于安全验证
+    // Generate random state for CSRF protection
     const state = Math.random().toString(36).substring(2, 15);
     
-    // 将state存储到session中
+    // Store state in session
     req.session.oauthState = state;
     
     const params = querystring.stringify({
@@ -33,25 +33,25 @@ router.get("/microsoft", (req, res) => {
     
     const microsoftAuthUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?${params}`;
     
-    console.log('Microsoft OAuth配置:');
+    console.log('Microsoft OAuth configuration:');
     console.log('- CLIENT_ID:', CLIENT_ID);
     console.log('- REDIRECT_URI:', REDIRECT_URI);
     console.log('- TENANT_ID:', TENANT_ID);
-    console.log('- 生成的state:', state);
-    console.log('- 重定向URL:', microsoftAuthUrl);
+    console.log('- state:', state);
+    console.log('- redirect URL:', microsoftAuthUrl);
     
     res.redirect(microsoftAuthUrl);
   } catch (error) {
-    console.error('Microsoft登录重定向失败:', error);
+    console.error('Microsoft login redirect failed:', error);
     return errorResponse(res, 500, 'Microsoft login initialization failed', error.message);
   }
 });
 
-// 微软OAuth回调
+// Microsoft OAuth callback
 router.get("/callback", async (req, res) => {
   const { code, error, error_description, state } = req.query;
   
-  // 验证state参数
+  // Validate state
   if (state !== req.session.oauthState) {
     return errorResponse(res, 400, 'Invalid state parameter');
   }
@@ -65,7 +65,7 @@ router.get("/callback", async (req, res) => {
   }
 
   try {
-    // 交换授权码获取访问令牌
+    // Exchange authorization code for access token
     const tokenRes = await axios.post(
       `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`,
       querystring.stringify({
@@ -81,14 +81,14 @@ router.get("/callback", async (req, res) => {
 
     const { access_token } = tokenRes.data;
 
-    // 获取用户信息
+    // Fetch user info
     const userRes = await axios.get("https://graph.microsoft.com/oidc/userinfo", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
 
     const microsoftUser = userRes.data;
     
-    // 准备OAuth用户数据
+    // Prepare OAuth user data
     const oauthData = {
       provider: 'microsoft',
       providerId: microsoftUser.sub,
@@ -97,13 +97,13 @@ router.get("/callback", async (req, res) => {
       avatarUrl: microsoftUser.picture || null
     };
 
-    // 使用OAuth登录
+    // Perform OAuth login
     const loginResult = await userService.oauthLogin(oauthData);
 
-    // 清除session中的state
+    // Clear session state
     delete req.session.oauthState;
 
-    // 重定向到前端首页，携带用户信息和token
+    // Redirect to frontend with user info and token
     const userData = {
       id: loginResult.user.id,
       studentId: loginResult.user.student_id,
@@ -113,27 +113,27 @@ router.get("/callback", async (req, res) => {
       provider: loginResult.user.provider
     };
     
-    // 将用户信息编码为URL参数
+    // Encode data for URL
     const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
     const tokenEncoded = encodeURIComponent(loginResult.token);
     
-    // 直接跳转到前端首页
+    // Redirect to frontend
     const redirectUrl = `${FRONTEND_URL}/?token=${tokenEncoded}&user=${userDataEncoded}&login=success`;
     res.redirect(redirectUrl);
     
   } catch (err) {
-    console.error("微软OAuth认证失败:", err.response?.data || err.message);
+    console.error("Microsoft OAuth authentication failed:", err.response?.data || err.message);
     
-    // 重定向到前端首页，携带错误信息
+    // Redirect to frontend with error
     const errorUrl = `${FRONTEND_URL}/?login=error&error=${encodeURIComponent('Authentication failed')}`;
     res.redirect(errorUrl);
   }
 });
 
-// 获取当前OAuth用户信息（基于JWT）
+// Get current OAuth user info (via JWT)
 router.get("/userinfo", async (req, res) => {
   try {
-    // 从Authorization头获取token
+    // Read token from Authorization header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -141,7 +141,7 @@ router.get("/userinfo", async (req, res) => {
       return errorResponse(res, 401, 'Access token not provided');
     }
 
-    // 验证token并获取用户信息
+    // Verify token and fetch user info
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
@@ -153,12 +153,12 @@ router.get("/userinfo", async (req, res) => {
 
     return successResponse(res, 200, 'User information retrieved successfully', formatUser(userInfo));
   } catch (error) {
-    console.error('获取OAuth用户信息失败:', error);
+    console.error('Get OAuth user info failed:', error);
     return errorResponse(res, 401, 'Invalid access token');
   }
 });
 
-// 获取OAuth登录状态
+// Get OAuth service status
 router.get("/status", (req, res) => {
   return successResponse(res, 200, 'OAuth service is running', {
     providers: {
@@ -176,10 +176,10 @@ router.get("/status", (req, res) => {
   });
 });
 
-// 验证登录状态（用于前端首页检查）
+// Verify login status (for frontend home page check)
 router.get("/verify-login", async (req, res) => {
   try {
-    // 从查询参数获取token和用户信息
+    // Read token and user from query
     const { token, user } = req.query;
     
     if (!token || !user) {
@@ -190,7 +190,7 @@ router.get("/verify-login", async (req, res) => {
       });
     }
     
-    // 验证token有效性
+    // Verify token
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
@@ -202,7 +202,7 @@ router.get("/verify-login", async (req, res) => {
       });
     }
     
-    // 解析用户信息
+    // Parse user
     const userData = JSON.parse(decodeURIComponent(user));
     
     return successResponse(res, 200, 'Login status is valid', {
@@ -212,7 +212,7 @@ router.get("/verify-login", async (req, res) => {
     });
     
   } catch (error) {
-    console.error('验证登录状态失败:', error);
+    console.error('Verify login status failed:', error);
     return successResponse(res, 200, 'Login status verification failed', { 
       isLoggedIn: false,
       user: null,
@@ -221,11 +221,11 @@ router.get("/verify-login", async (req, res) => {
   }
 });
 
-// 登出（清除session）
+// Logout (clear session)
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      console.error('Session销毁失败:', err);
+      console.error('Failed to destroy session:', err);
       return errorResponse(res, 500, 'Logout failed');
     }
     

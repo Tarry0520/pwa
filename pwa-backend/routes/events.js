@@ -6,6 +6,9 @@ function sampleEvents() {
   const now = new Date()
   const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
   const toIso = (d) => new Date(d).toISOString()
+  const month = now.getMonth()
+  const termNo = (month >= 8 || month <= 1) ? 1 : 2
+  const year = now.getFullYear()
 
   const e1Date = new Date(today)
   const e2Date = new Date(today); e2Date.setDate(e2Date.getDate() + 3)
@@ -13,9 +16,9 @@ function sampleEvents() {
 
   const nowIso = new Date().toISOString()
   return [
-    { id: 'ev-2001', type: 'school', date: toIso(e1Date), title: '開學典禮', location: '大禮堂', updatedAt: nowIso },
-    { id: 'ev-2002', type: 'exam', date: toIso(e2Date), title: '數學小考', courseId: '2024-1-MATH101', location: 'A101', updatedAt: nowIso },
-    { id: 'ev-2003', type: 'activity', date: toIso(e3Date), title: '運動會預賽', location: '操場', updatedAt: nowIso },
+    { id: 'ev-2001', type: 'school', date: toIso(e1Date), title: 'Opening Ceremony', location: 'Main Auditorium', updatedAt: nowIso },
+    { id: 'ev-2002', type: 'exam', date: toIso(e2Date), title: 'Math Quiz', courseId: `${year}-${termNo}-MATH101`, location: 'A101', updatedAt: nowIso },
+    { id: 'ev-2003', type: 'activity', date: toIso(e3Date), title: 'Sports Day Preliminaries', location: 'Stadium', updatedAt: nowIso },
   ]
 }
 
@@ -62,4 +65,3 @@ router.get('/events', async (req, res) => {
 })
 
 module.exports = router
-

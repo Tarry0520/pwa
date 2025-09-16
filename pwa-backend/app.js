@@ -1,8 +1,8 @@
-// 启用装饰器支持（在缺少依賴時不阻擋啟動）
+// Enable decorator support (non-blocking if dependency is missing)
 try {
   require('reflect-metadata')
 } catch (e) {
-  console.warn('reflect-metadata 未安裝，略過（POC 模式）')
+  console.warn('reflect-metadata is not installed, skipping (POC mode)')
 }
 
 const createError = require('http-errors');
@@ -26,19 +26,19 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// 中间件配置
+// Middleware setup
 app.use(logger('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 
-// CORS配置
+// CORS configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
 }));
 
-// Session配置
+// Session configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "some_secret",
@@ -46,51 +46,51 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24小时
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
   })
 );
 
-// 静态文件
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 全局字段转换中间件
-// 只对响应数据进行转换：下划线 -> 驼峰（用于前端显示）
-// 请求数据不进行转换，保持前端发送的原始格式
+// Global field transformation middleware
+// Only transform response data: snake_case -> camelCase (for frontend display)
+// Do not transform request payloads; keep original frontend format
 app.use(responseTransform({
-  exclude: ['password', 'secretKey', 'token'] // 排除敏感字段
+  exclude: ['password', 'secretKey', 'token'] // exclude sensitive fields
 }));
 
-// 初始化数据库和Redis连接
+// Initialize database and Redis connections
 async function initializeServices() {
   try {
-    console.log('正在初始化服务...');
+    console.log('Initializing services...');
     
-    // 测试数据库连接
+    // Test DB connection
     const dbConnected = await testConnection();
     if (dbConnected) {
       await initDatabase();
     }
     
-    // 测试Redis连接
+    // Test Redis connection
     await testRedisConnection();
     
-    console.log('服务初始化完成');
+    console.log('Service initialization completed');
   } catch (error) {
-    console.error('服务初始化失败:', error);
+    console.error('Service initialization failed:', error);
   }
 }
 
-// 启动时初始化服务
+// Initialize services on startup
 initializeServices();
 
-// 注册路由
+// Register routes
 registerRoutes(app);
 
-// 404错误处理（必须在路由之后，全局错误处理之前）
+// 404 handler (must be after routes, before global error handler)
 app.use(notFoundHandler);
 
-// 全局错误处理中间件（必须在最后）
+// Global error handler (must be last)
 app.use(globalErrorHandler);
 
 module.exports = app;

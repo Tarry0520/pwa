@@ -1,6 +1,6 @@
 // Minimal IndexedDB wrapper for offline cache (no external deps)
 const DB_NAME = 'school-poc'
-const DB_VERSION = 2
+const DB_VERSION = 3 // bump to create new stores (attendance, leaveQueue)
 
 // Ensure values are structured-cloneable before IndexedDB put
 function toIdbSafe(input) {
@@ -69,6 +69,15 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains('meta')) {
         db.createObjectStore('meta', { keyPath: 'key' })
+      }
+      // M3: attendance by id (date-based) and leaveQueue
+      if (!db.objectStoreNames.contains('attendance')) {
+        const store = db.createObjectStore('attendance', { keyPath: 'id' })
+        store.createIndex('term', 'term', { unique: false })
+        store.createIndex('date', 'date', { unique: false })
+      }
+      if (!db.objectStoreNames.contains('leaveQueue')) {
+        db.createObjectStore('leaveQueue', { keyPath: 'id' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -231,5 +240,67 @@ export async function setMeta(key, value) {
       console.error('[IDB] set meta failed', req.error, { key })
       reject(req.error)
     }
+  })
+}
+
+// Attendance
+export async function getAttendanceFromDb(term) {
+  const store = await getStore('attendance')
+  const all = await new Promise((resolve, reject) => {
+    const req = store.getAll()
+    req.onsuccess = () => resolve(req.result || [])
+    req.onerror = () => reject(req.error)
+  })
+  if (!term) return all
+  return all.filter((r) => r.term === term)
+}
+
+export async function putAttendanceToDb(items = []) {
+  if (!Array.isArray(items)) return
+  const store = await getStore('attendance', 'readwrite')
+  await Promise.all(
+    items.map(
+      (item) =>
+        new Promise((resolve, reject) => {
+          const safe = toIdbSafe(item)
+          debugIfChanged(item, safe, 'attendance')
+          const req = store.put(safe)
+          req.onsuccess = () => resolve(true)
+          req.onerror = () => {
+            console.error('[IDB] put attendance failed', req.error, { itemKeys: Object.keys(item || {}) })
+            reject(req.error)
+          }
+        }),
+    ),
+  )
+}
+
+// Leave request offline queue
+export async function enqueueLeave(reqItem) {
+  const store = await getStore('leaveQueue', 'readwrite')
+  const item = { id: reqItem.id || `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, ...reqItem }
+  return await new Promise((resolve, reject) => {
+    const safe = toIdbSafe(item)
+    const req = store.put(safe)
+    req.onsuccess = () => resolve(item)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function getLeaveQueue() {
+  const store = await getStore('leaveQueue')
+  return await new Promise((resolve, reject) => {
+    const req = store.getAll()
+    req.onsuccess = () => resolve(req.result || [])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function dequeueLeave(id) {
+  const store = await getStore('leaveQueue', 'readwrite')
+  return await new Promise((resolve, reject) => {
+    const req = store.delete(id)
+    req.onsuccess = () => resolve(true)
+    req.onerror = () => reject(req.error)
   })
 }

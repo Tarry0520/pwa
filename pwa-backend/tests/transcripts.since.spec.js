@@ -1,10 +1,10 @@
 const request = require('supertest')
 const app = require('../app')
 
-describe('GET /me/transcripts since 過濾', () => {
-  const terms = '2024-1,2024-2'
+describe('GET /me/transcripts since filter', () => {
+  const terms = '2025-1,2025-2'
 
-  test('不帶 since：應回傳至少一個學期與課程', async () => {
+  test('Without since: returns at least one term with courses', async () => {
     const res = await request(app).get(`/me/transcripts`).query({ terms })
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('success', true)
@@ -16,7 +16,7 @@ describe('GET /me/transcripts since 過濾', () => {
     expect(Array.isArray(items[0].courses)).toBe(true)
   })
 
-  test('帶非常早的 since（1970）：應回傳有資料，且每筆課程 updatedAt > since', async () => {
+  test('With very early since (1970): returns data with each course updatedAt > since', async () => {
     const since = new Date(0).toISOString()
     const res = await request(app).get(`/me/transcripts`).query({ terms, since })
     expect(res.status).toBe(200)
@@ -30,7 +30,7 @@ describe('GET /me/transcripts since 過濾', () => {
     }
   })
 
-  test('帶未來的 since（公元 3000 年）：應回傳空 items', async () => {
+  test('With future since (year 3000): returns empty items', async () => {
     const since = new Date('3000-01-01T00:00:00.000Z').toISOString()
     const res = await request(app).get(`/me/transcripts`).query({ terms, since })
     expect(res.status).toBe(200)
@@ -39,4 +39,3 @@ describe('GET /me/transcripts since 過濾', () => {
     expect(items.length).toBe(0)
   })
 })
-
