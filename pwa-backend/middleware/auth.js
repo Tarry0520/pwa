@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { get, exists } = require('../config/redis');
+const { errorResponse } = require('../utils/responseFormatter');
+const { BUSINESS_CODE } = require('../utils/responseCodes');
 require('dotenv').config();
 
 // JWT密钥
@@ -41,39 +43,27 @@ async function authenticateToken(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: '访问令牌缺失'
-      });
+      return errorResponse(res, BUSINESS_CODE.TOKEN_MISSING);
     }
 
     // 验证token
     const decoded = verifyToken(token);
     if (!decoded) {
-      return res.status(403).json({
-        success: false,
-        message: '无效的访问令牌'
-      });
+      return errorResponse(res, BUSINESS_CODE.TOKEN_INVALID);
     }
 
     // 检查token是否在Redis黑名单中（用于登出功能）
     const isBlacklisted = await exists(`blacklist:${token}`);
     if (isBlacklisted) {
-      return res.status(403).json({
-        success: false,
-        message: '令牌已失效'
-      });
+      return errorResponse(res, BUSINESS_CODE.TOKEN_BLACKLISTED);
     }
 
     // 将用户信息添加到请求对象
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('认证中间件错误:', error);
-    return res.status(500).json({
-      success: false,
-      message: '服务器内部错误'
-    });
+    console.error('Authentication middleware error:', error);
+    return errorResponse(res, BUSINESS_CODE.INTERNAL_ERROR, null, error.message);
   }
 }
 
@@ -100,7 +90,7 @@ async function optionalAuth(req, res, next) {
     
     next();
   } catch (error) {
-    console.error('可选认证中间件错误:', error);
+    console.error('Optional authentication middleware error:', error);
     next();
   }
 }

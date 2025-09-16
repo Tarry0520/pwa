@@ -18,13 +18,6 @@ register(process.env.SERVICE_WORKER_FILE, {
   registered(registration) {
     console.log('registration', registration)
     console.log('Service worker 已注册')
-
-    // 请求通知权限
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        console.log('通知权限已授权')
-      }
-    })
   },
 
   cached(/* registration */) {

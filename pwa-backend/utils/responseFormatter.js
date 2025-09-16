@@ -3,6 +3,8 @@
  * 用于统一处理API响应格式，避免直接暴露数据库字段
  */
 
+const { BUSINESS_CODE, getHttpStatus, getMessage } = require('./responseCodes');
+
 /**
  * 格式化用户信息，只返回前端需要的字段
  * @param {Object} user - 数据库用户对象
@@ -50,15 +52,19 @@ function formatUserList(users) {
 /**
  * 成功响应格式
  * @param {Object} res - Express响应对象
- * @param {number} statusCode - HTTP状态码
+ * @param {number} businessCode - 业务状态码
  * @param {string} message - 响应消息
  * @param {*} data - 响应数据
  * @returns {Object} 格式化的响应
  */
-function successResponse(res, statusCode = 200, message = 'Operation successful', data = null) {
+function successResponse(res, businessCode = BUSINESS_CODE.SUCCESS, message = null, data = null) {
+  const httpStatus = getHttpStatus(businessCode);
+  const responseMessage = getMessage(businessCode, message);
+  
   const response = {
     success: true,
-    message,
+    code: businessCode,
+    message: responseMessage,
     timestamp: new Date().toISOString()
   };
   
@@ -66,21 +72,26 @@ function successResponse(res, statusCode = 200, message = 'Operation successful'
     response.data = data;
   }
   
-  return res.status(statusCode).json(response);
+  return res.status(httpStatus).json(response);
 }
 
 /**
  * 错误响应格式
  * @param {Object} res - Express响应对象
- * @param {number} statusCode - HTTP状态码
+ * @param {number} businessCode - 业务状态码
  * @param {string} message - 错误消息
  * @param {*} details - 错误详情（可选，仅开发环境）
  * @returns {Object} 格式化的错误响应
  */
-function errorResponse(res, statusCode = 500, message = 'Internal server error', details = null) {
+function errorResponse(res, businessCode = BUSINESS_CODE.INTERNAL_ERROR, message = null, details = null) {
+  const httpStatus = getHttpStatus(businessCode);
+  const responseMessage = getMessage(businessCode, message);
+  
   const response = {
     success: false,
-    message
+    code: businessCode,
+    message: responseMessage,
+    timestamp: new Date().toISOString()
   };
   
   // 仅在开发环境返回错误详情
@@ -88,7 +99,7 @@ function errorResponse(res, statusCode = 500, message = 'Internal server error',
     response.details = details;
   }
   
-  return res.status(statusCode).json(response);
+  return res.status(httpStatus).json(response);
 }
 
 /**
@@ -100,11 +111,13 @@ function errorResponse(res, statusCode = 500, message = 'Internal server error',
 function validationErrorResponse(res, errors) {
   const response = {
     success: false,
-    message: 'Request parameter validation failed',
-    errors: Array.isArray(errors) ? errors : [errors]
+    code: BUSINESS_CODE.VALIDATION_ERROR,
+    message: getMessage(BUSINESS_CODE.VALIDATION_ERROR),
+    errors: Array.isArray(errors) ? errors : [errors],
+    timestamp: new Date().toISOString()
   };
   
-  return res.status(400).json(response);
+  return res.status(getHttpStatus(BUSINESS_CODE.VALIDATION_ERROR)).json(response);
 }
 
 /**
@@ -120,7 +133,7 @@ function validationErrorResponse(res, errors) {
 function paginatedResponse(res, items, page, limit, total, message = 'Data retrieved successfully') {
   const totalPages = Math.ceil(total / limit);
   
-  return successResponse(res, 200, message, {
+  return successResponse(res, BUSINESS_CODE.SUCCESS, message, {
     items,
     pagination: {
       page: parseInt(page),

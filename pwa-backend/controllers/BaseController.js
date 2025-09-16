@@ -5,6 +5,7 @@
 
 const FieldTransformer = require('../utils/fieldTransformer');
 const { successResponse, errorResponse, validationErrorResponse } = require('../utils/responseFormatter');
+const { BUSINESS_CODE } = require('../utils/responseCodes');
 
 class BaseController {
   /**
@@ -36,40 +37,25 @@ class BaseController {
   /**
    * 发送成功响应
    * @param {Object} res - Express响应对象
-   * @param {number} statusCode - HTTP状态码
+   * @param {number} businessCode - 业务状态码
    * @param {string} message - 响应消息
    * @param {*} data - 响应数据
    * @returns {Object} 响应对象
    */
-  sendSuccess(res, statusCode = 200, message = 'Operation successful', data = null) {
-    const responseData = { success: true, message, timestamp: new Date().toISOString() };
-    
-    if (data !== null) {
-      responseData.data = FieldTransformer.toFrontend(data);
-    }
-    
-    return res.status(statusCode).json(responseData);
+  sendSuccess(res, businessCode = BUSINESS_CODE.SUCCESS, message = null, data = null) {
+    return successResponse(res, businessCode, message, data ? FieldTransformer.toFrontend(data) : null);
   }
 
   /**
    * 发送错误响应
    * @param {Object} res - Express响应对象
-   * @param {number} statusCode - HTTP状态码
+   * @param {number} businessCode - 业务状态码
    * @param {string} message - 错误消息
    * @param {*} details - 错误详情
    * @returns {Object} 响应对象
    */
-  sendError(res, statusCode = 500, message = 'Internal server error', details = null) {
-    const responseData = {
-      success: false,
-      message
-    };
-    
-    if (details && process.env.NODE_ENV === 'development') {
-      responseData.details = details;
-    }
-    
-    return res.status(statusCode).json(responseData);
+  sendError(res, businessCode = BUSINESS_CODE.INTERNAL_ERROR, message = null, details = null) {
+    return errorResponse(res, businessCode, message, details);
   }
 
   /**
@@ -79,13 +65,7 @@ class BaseController {
    * @returns {Object} 响应对象
    */
   sendValidationError(res, errors) {
-    const responseData = {
-      success: false,
-      message: 'Request parameter validation failed',
-      errors: Array.isArray(errors) ? errors : [errors]
-    };
-    
-    return res.status(400).json(responseData);
+    return validationErrorResponse(res, errors);
   }
 
   /**
@@ -131,14 +111,15 @@ class BaseController {
    * @param {Function} asyncFn - 异步函数
    * @param {Object} res - Express响应对象
    * @param {string} errorMessage - 错误消息
+   * @param {number} errorCode - 错误状态码
    */
-  async handleAsync(asyncFn, res, errorMessage = 'Operation failed') {
+  async handleAsync(asyncFn, res, errorMessage = 'Operation failed', errorCode = BUSINESS_CODE.INTERNAL_ERROR) {
     try {
       const result = await asyncFn();
       return result;
     } catch (error) {
-      console.error('Controller错误:', error);
-      return this.sendError(res, 500, errorMessage, error.message);
+      console.error('Controller error:', error);
+      return this.sendError(res, errorCode, errorMessage, error.message);
     }
   }
 }

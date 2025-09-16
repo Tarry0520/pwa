@@ -32,6 +32,9 @@ function urlBase64ToUint8Array(base64String) {
 const subscribeToPush = async () => {
   try {
     const permission = await Notification.requestPermission()
+    if (permission === 'granted') {
+      console.log('通知权限已授权')
+    }
     if (permission !== 'granted') {
       $q.notify({ type: 'negative', message: 'Notification permission not granted' })
       return

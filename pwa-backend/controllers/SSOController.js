@@ -4,6 +4,7 @@
  */
 
 const BaseController = require('./BaseController');
+const { BUSINESS_CODE } = require('../utils/responseCodes');
 
 class SSOController extends BaseController {
   /**
@@ -25,7 +26,7 @@ class SSOController extends BaseController {
     const token = authHeader && authHeader.split(' ')[1];
     
     if (!token) {
-      return this.sendError(res, 401, 'Access token not provided');
+      return this.sendError(res, BUSINESS_CODE.TOKEN_MISSING);
     }
 
     try {
@@ -40,13 +41,13 @@ class SSOController extends BaseController {
       );
 
       if (result) {
-        return this.sendSuccess(res, 200, 'User information retrieved successfully', result);
+        return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'User information retrieved successfully', result);
       } else {
-        return this.sendError(res, 404, 'User not found');
+        return this.sendError(res, BUSINESS_CODE.USER_NOT_FOUND);
       }
     } catch (error) {
-      console.error('获取OAuth用户信息失败:', error);
-      return this.sendError(res, 401, 'Invalid access token');
+      console.error('Failed to get OAuth user information:', error);
+      return this.sendError(res, BUSINESS_CODE.TOKEN_INVALID);
     }
   }
 
@@ -65,7 +66,7 @@ class SSOController extends BaseController {
       }
     };
     
-    return this.sendSuccess(res, 200, 'OAuth service is running', statusData);
+    return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'OAuth service is running', statusData);
   }
 
   /**
@@ -76,11 +77,11 @@ class SSOController extends BaseController {
   logout(req, res) {
     req.session.destroy((err) => {
       if (err) {
-        console.error('Session销毁失败:', err);
-        return this.sendError(res, 500, 'Logout failed');
+        console.error('Session destruction failed:', err);
+        return this.sendError(res, BUSINESS_CODE.INTERNAL_ERROR, 'Logout failed');
       }
       
-      return this.sendSuccess(res, 200, 'Logout successful');
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Logout successful');
     });
   }
 }

@@ -4,6 +4,7 @@
  */
 
 const BaseController = require('./BaseController');
+const { BUSINESS_CODE } = require('../utils/responseCodes');
 
 class UserController extends BaseController {
   /**
@@ -32,12 +33,12 @@ class UserController extends BaseController {
 
     // 验证邮箱格式
     if (!this.validateEmail(email)) {
-      return this.sendValidationError(res, 'Invalid email format');
+      return this.sendError(res, BUSINESS_CODE.EMAIL_INVALID);
     }
 
     // 验证密码长度
     if (!this.validatePassword(password)) {
-      return this.sendValidationError(res, 'Password must be at least 6 characters');
+      return this.sendError(res, BUSINESS_CODE.PASSWORD_TOO_WEAK);
     }
 
     // 调用服务层
@@ -48,7 +49,7 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      return this.sendSuccess(res, 201, 'User registered successfully, student ID generated automatically', result);
+      return this.sendSuccess(res, BUSINESS_CODE.CREATED, 'User registered successfully, student ID generated automatically', result);
     }
   }
 
@@ -82,7 +83,7 @@ class UserController extends BaseController {
         token: result.token,
         expiresIn: result.expiresIn
       };
-      return this.sendSuccess(res, 200, 'Login successful', transformedResult);
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Login successful', transformedResult);
     }
   }
 
@@ -102,7 +103,7 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      return this.sendSuccess(res, 200, 'Logout successful');
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Logout successful');
     }
   }
 
@@ -121,9 +122,9 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      return this.sendSuccess(res, 200, 'User information retrieved successfully', result);
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'User information retrieved successfully', result);
     } else {
-      return this.sendError(res, 404, 'User not found');
+      return this.sendError(res, BUSINESS_CODE.USER_NOT_FOUND);
     }
   }
 
@@ -144,7 +145,7 @@ class UserController extends BaseController {
 
     // 验证邮箱格式（如果提供了邮箱）
     if (email && !this.validateEmail(email)) {
-      return this.sendValidationError(res, 'Invalid email format');
+      return this.sendError(res, BUSINESS_CODE.EMAIL_INVALID);
     }
 
     // 调用服务层
@@ -159,7 +160,7 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      return this.sendSuccess(res, 200, 'Personal information updated successfully', result);
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Personal information updated successfully', result);
     }
   }
 
@@ -182,7 +183,7 @@ class UserController extends BaseController {
 
     // 验证新密码长度
     if (!this.validatePassword(newPassword)) {
-      return this.sendValidationError(res, 'New password must be at least 6 characters');
+      return this.sendError(res, BUSINESS_CODE.PASSWORD_TOO_WEAK);
     }
 
     // 调用服务层（传递当前token用于清除）
@@ -193,7 +194,7 @@ class UserController extends BaseController {
     );
 
     if (result) {
-      return this.sendSuccess(res, 200, 'Password changed successfully, please login again');
+      return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Password changed successfully, please login again');
     }
   }
 
@@ -209,7 +210,7 @@ class UserController extends BaseController {
       email: req.user.email
     };
     
-    return this.sendSuccess(res, 200, 'Token is valid', { user: userInfo });
+    return this.sendSuccess(res, BUSINESS_CODE.SUCCESS, 'Token is valid', { user: userInfo });
   }
 }
 
