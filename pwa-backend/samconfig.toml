@@ -1,4 +1,5 @@
 version = 0.1
+
 [default.deploy.parameters]
 stack_name = "pwc-pwa-backend-sam"
 resolve_s3 = true
@@ -6,5 +7,51 @@ s3_prefix = "pwc-pwa-backend-sam"
 region = "ap-southeast-1"
 confirm_changeset = false
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=\"dev\""
+parameter_overrides = [
+  "Environment=\"dev\"",
+  "DbHost=\"localhost\"",
+  "DbPort=\"3306\"",
+  "DbUser=\"your_username\"",
+  "DbPassword=\"your_password\"",
+  "DbName=\"your_database_name\"",
+  "RedisHost=\"localhost\"",
+  "RedisPort=\"6379\"",
+  "RedisPassword=\"\"",
+  "MicrosoftClientId=\"your_client_id\"",
+  "MicrosoftClientSecret=\"your_client_secret\"",
+  "MicrosoftRedirectUri=\"https://your-api-gateway-url/sso/callback\"",
+  "MicrosoftTenantId=\"common\"",
+  "FrontendUrl=\"http://localhost:3000\"",
+  "VapidPublicKey=\"your_vapid_public_key\"",
+  "VapidPrivateKey=\"your_vapid_private_key\"",
+  "VapidContact=\"mailto:your-email@example.com\""
+]
+image_repositories = []
+
+[production.deploy.parameters]
+stack_name = "pwc-pwa-backend-sam-prod"
+resolve_s3 = true
+s3_prefix = "pwc-pwa-backend-sam-prod"
+region = "ap-southeast-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+  "Environment=\"prod\"",
+  "DbHost=\"your_prod_db_host\"",
+  "DbPort=\"3306\"",
+  "DbUser=\"your_prod_db_user\"",
+  "DbPassword=\"your_prod_db_password\"",
+  "DbName=\"your_prod_db_name\"",
+  "RedisHost=\"your_prod_redis_host\"",
+  "RedisPort=\"6379\"",
+  "RedisPassword=\"your_prod_redis_password\"",
+  "MicrosoftClientId=\"your_prod_client_id\"",
+  "MicrosoftClientSecret=\"your_prod_client_secret\"",
+  "MicrosoftRedirectUri=\"https://your-prod-api-gateway-url/sso/callback\"",
+  "MicrosoftTenantId=\"common\"",
+  "FrontendUrl=\"https://your-prod-frontend-url\"",
+  "VapidPublicKey=\"your_prod_vapid_public_key\"",
+  "VapidPrivateKey=\"your_prod_vapid_private_key\"",
+  "VapidContact=\"mailto:your-prod-email@example.com\""
+]
 image_repositories = []

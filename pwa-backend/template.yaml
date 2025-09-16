@@ -8,6 +8,95 @@ Parameters:
     AllowedValues:
       - dev
       - prod
+  
+  # Database Configuration
+  DbHost:
+    Type: String
+    Default: "localhost"
+    Description: "Database host address"
+  
+  DbPort:
+    Type: String
+    Default: "3306"
+    Description: "Database port"
+  
+  DbUser:
+    Type: String
+    Default: "your_username"
+    Description: "Database username"
+  
+  DbPassword:
+    Type: String
+    Default: "your_password"
+    NoEcho: true
+    Description: "Database password"
+  
+  DbName:
+    Type: String
+    Default: "your_database_name"
+    Description: "Database name"
+  
+  # Redis Configuration
+  RedisHost:
+    Type: String
+    Default: "localhost"
+    Description: "Redis host address"
+  
+  RedisPort:
+    Type: String
+    Default: "6379"
+    Description: "Redis port"
+  
+  RedisPassword:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: "Redis password"
+  
+  # Microsoft SSO Configuration
+  MicrosoftClientId:
+    Type: String
+    Default: "your_client_id"
+    Description: "Microsoft Azure AD Client ID"
+  
+  MicrosoftClientSecret:
+    Type: String
+    Default: "your_client_secret"
+    NoEcho: true
+    Description: "Microsoft Azure AD Client Secret"
+  
+  MicrosoftRedirectUri:
+    Type: String
+    Default: "https://your-api-gateway-url/sso/callback"
+    Description: "Microsoft SSO redirect URI"
+  
+  MicrosoftTenantId:
+    Type: String
+    Default: "common"
+    Description: "Microsoft Azure AD Tenant ID"
+  
+  # Frontend Configuration
+  FrontendUrl:
+    Type: String
+    Default: "http://localhost:3000"
+    Description: "Frontend application URL"
+  
+  # VAPID Configuration for Push Notifications
+  VapidPublicKey:
+    Type: String
+    Default: "your_vapid_public_key"
+    Description: "VAPID public key for push notifications"
+  
+  VapidPrivateKey:
+    Type: String
+    Default: "your_vapid_private_key"
+    NoEcho: true
+    Description: "VAPID private key for push notifications"
+  
+  VapidContact:
+    Type: String
+    Default: "mailto:your-email@example.com"
+    Description: "VAPID contact email"
 
 Globals:
   Function:
@@ -18,23 +107,23 @@ Globals:
     Environment:
       Variables:
         NODE_ENV: !Ref Environment
-        DB_HOST: "52.221.153.106"
-        DB_PORT: "3306"
-        DB_USER: "xxgjj"
-        DB_PASSWORD: "123456"
-        DB_NAME: "pwa_backend"
-        REDIS_HOST: "52.221.153.106"
-        REDIS_PORT: "6379"
-        REDIS_PASSWORD: "1234567890"
+        DB_HOST: !Ref DbHost
+        DB_PORT: !Ref DbPort
+        DB_USER: !Ref DbUser
+        DB_PASSWORD: !Ref DbPassword
+        DB_NAME: !Ref DbName
+        REDIS_HOST: !Ref RedisHost
+        REDIS_PORT: !Ref RedisPort
+        REDIS_PASSWORD: !Ref RedisPassword
         CORS_ORIGIN: "*"
-        VAPID_PUBLIC_KEY: "your_vapid_public_key"
-        VAPID_PRIVATE_KEY: "your_vapid_private_key"
-        VAPID_CONTACT: "mailto:your-email@example.com"
-        MICROSOFT_CLIENT_ID: "your_client_id"
-        MICROSOFT_CLIENT_SECRET: "your_client_secret"
-        MICROSOFT_REDIRECT_URI: "https://byoxycpzeg.execute-api.ap-southeast-1.amazonaws.com/sso/callback"
-        MICROSOFT_TENANT_ID: "common"
-        FRONTEND_URL: "https://dev.d3e0epva6o5gvq.amplifyapp.com"
+        VAPID_PUBLIC_KEY: !Ref VapidPublicKey
+        VAPID_PRIVATE_KEY: !Ref VapidPrivateKey
+        VAPID_CONTACT: !Ref VapidContact
+        MICROSOFT_CLIENT_ID: !Ref MicrosoftClientId
+        MICROSOFT_CLIENT_SECRET: !Ref MicrosoftClientSecret
+        MICROSOFT_REDIRECT_URI: !Ref MicrosoftRedirectUri
+        MICROSOFT_TENANT_ID: !Ref MicrosoftTenantId
+        FRONTEND_URL: !Ref FrontendUrl
 
 Resources:
   PwaApi:

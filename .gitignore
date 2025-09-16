@@ -1,6 +1,42 @@
 
+# Dependencies
 pwa-backend/node_modules/
+pwa-front/node_modules/
 
+# Docker data
 docker/data/
 
+# AWS SAM
 pwa-backend/.aws-sam/
+
+# Environment files with sensitive data
+pwa-backend/.env
+pwa-backend/.env.local
+pwa-backend/.env.production
+pwa-backend/.env.development
+pwa-front/.env
+pwa-front/.env.local
+pwa-front/.env.production
+pwa-front/.env.development
+
+# AWS credentials
+.aws/
+aws-credentials.json
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+dist/
+build/
