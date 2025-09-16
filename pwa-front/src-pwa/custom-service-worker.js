@@ -9,7 +9,7 @@
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
-import { StaleWhileRevalidate } from 'workbox-strategies'
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies'
 
 self.skipWaiting()
 clientsClaim()
@@ -81,6 +81,14 @@ registerRoute(
     request.destination === 'script',
   new StaleWhileRevalidate({
     cacheName: 'static-resources-' + (new Date().toISOString().split('T')[0]),
+  }),
+)
+
+// Cache attachments (e.g., announcement files) with CacheFirst
+registerRoute(
+  ({ url }) => url.pathname.includes('/attachments/') || /\.(?:pdf|png|jpg|jpeg|gif|doc|docx|ppt|pptx)$/i.test(url.pathname),
+  new CacheFirst({
+    cacheName: 'attachments-cache',
   }),
 )
 self.addEventListener('push', function (event) {

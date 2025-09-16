@@ -32,6 +32,22 @@
             <q-item-label>Home</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item to="/schedule" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="event" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>課表</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item to="/announcements" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="campaign" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>公告</q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item to="/transcript" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="assignment" />

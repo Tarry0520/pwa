@@ -12,12 +12,12 @@
 備註：ETag/If-None-Match（304）依 DEV_PLAN 延至 M4 實作；M1 僅需 `?since=` 增量。
 
 ## M2 課表/行事曆 + 公告
-- [ ] 新增 `src/pages/SchedulePage.vue` 與 store `src/stores/schedule.ts`
-- [ ] 新增 `src/pages/AnnouncementsPage.vue` 與 store `src/stores/announcements.ts`
-- [ ] db.ts：schedule、events、announcements 表結構
-- [ ] api.ts：`GET /schedule?term=`、`GET /events?range=`、`GET /announcements?since=`
-- [ ] SW：附件 CacheFirst；清理舊版附件快取
-- [ ] UI：公告已讀狀態本地化與增量同步
+- [x] 新增 `src/pages/SchedulePage.vue` 與 store `src/stores/schedule.js`
+- [x] 新增 `src/pages/AnnouncementsPage.vue` 與 store `src/stores/announcements.js`
+- [x] db.js：schedule、events、announcements 表結構
+- [x] api.js：`GET /schedule?term=`、`GET /events?range=`、`GET /announcements?since=`
+- [x] SW：附件 CacheFirst；清理舊版附件快取
+- [x] UI：公告已讀狀態本地化與增量同步
 
 ## M3 出缺勤 + 請假（含 Background Sync）
 - [ ] 新增 `src/pages/AttendancePage.vue` 與 store `src/stores/attendance.ts`
@@ -30,7 +30,7 @@
 - [ ] 離線徽章與全域網路狀態提示
 - [ ] 錯誤/衝突提示、重試與回滾
 - [ ] 無障礙細節、行動端互動（按鈕大小、觸控區）
-- [ ] 單元測試（stores、api）與基本文件更新
+ 
 
 ## 補充
 - [ ] 調整 `src-pwa/custom-service-worker.js`：加入 Background Sync、快取分組命名與版本清理

@@ -7,6 +7,8 @@ const routes = [
       { path: '/subscription', component: () => import('pages/SubscriptionPage.vue') },
       { path: '/profile', component: () => import('pages/UserProfilePage.vue') },
       { path: '/transcript', component: () => import('pages/TranscriptPage.vue') },
+      { path: '/schedule', component: () => import('pages/SchedulePage.vue') },
+      { path: '/announcements', component: () => import('pages/AnnouncementsPage.vue') },
     ],
   },
   {

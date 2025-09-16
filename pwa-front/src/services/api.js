@@ -21,3 +21,32 @@ export async function fetchTranscripts({ terms = [], since } = {}) {
   const resp = await api.get(path)
   return resp.data || resp
 }
+
+// Schedule
+export async function fetchSchedule({ term, since } = {}) {
+  const query = qs({ term, since })
+  const path = `/schedule${query ? `?${query}` : ''}`
+  const resp = await api.get(path)
+  return resp.data || resp
+}
+
+// Events
+export async function fetchEvents({ range, term, since } = {}) {
+  const query = qs({ range, term, since })
+  const path = `/events${query ? `?${query}` : ''}`
+  const resp = await api.get(path)
+  return resp.data || resp
+}
+
+// Announcements
+export async function fetchAnnouncements({ since } = {}) {
+  const query = qs({ since })
+  const path = `/announcements${query ? `?${query}` : ''}`
+  const resp = await api.get(path)
+  return resp.data || resp
+}
+
+export async function markAnnouncementRead(id) {
+  const resp = await api.post(`/announcements/${encodeURIComponent(id)}/read`)
+  return resp.data || resp
+}
